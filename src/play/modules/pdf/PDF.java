@@ -90,7 +90,7 @@ public class PDF {
         if (args.length > 0 && args[0] instanceof String && LocalvariablesNamesEnhancer.LocalVariablesNamesTracer.getAllLocalVariableNames(args[0]).isEmpty()) {
             templateName = args[0].toString();
         } else {
-            templateName = Http.Request.current().action.replace(".", "/") + "." + (format == null ? "html" : format);
+            templateName = request.action.replace(".", "/") + "." + (format == null ? "html" : format);
         }
         if(templateName.startsWith("@")) {
             templateName = templateName.substring(1);
@@ -100,8 +100,8 @@ public class PDF {
             templateName = templateName.replace(".", "/") + "." + (format == null ? "html" : format);
         }
         VirtualFile file = Play.getVirtualFile(templateName);
-        if (!file.exists()) {
-            templateName = templateName.substring(0,templateName.lastIndexOf("." + format)) + ".html";
+        if (file == null || !file.exists()) {
+            templateName = templateName.substring(0, templateName.lastIndexOf("." + format)) + ".html";
         }
         renderTemplateAsPDF(templateName, args);
     }
