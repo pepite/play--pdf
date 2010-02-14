@@ -1,0 +1,6 @@
+dist
+lib/play-netty.jar
+build.properties
+*.iws
+*.ipr
+*iml

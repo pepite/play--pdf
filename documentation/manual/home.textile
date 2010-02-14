@@ -1,0 +1,14 @@
+h1. Netty module
+
+The netty module allows you to use JBoss Netty:http://jboss.org/netty as a play! server.
+
+h2. <a>Enable the Netty module for the application</a>
+
+In the **/conf/application.conf** file, enable the Netty module by adding this line:
+
+bc. # The netty module
+module.netty=${play.path}/modules/netty
+
+h2. <a>Starting the Play! with netty as application server</a>
+
+bc. play netty:run myapplication
