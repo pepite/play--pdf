@@ -1,5 +1,7 @@
 dist
 lib/play-pdf.jar
+samples-and-tests/pdf/tmp
+samples-and-tests/pdf/log
 build.properties
 *.iws
 *.ipr
