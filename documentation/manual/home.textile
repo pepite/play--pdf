@@ -18,3 +18,4 @@ bc. import static play.modules.pdf.PDF.*;
 And then use the renderPDF() method as you would use the render() method.
 
 The renderPDF will first look for a .pdf template. If there are none, it will fall back to the .html template. You can use a media="print" css to customize the PDF to render. The result is a PDF file. The render method uses the same template as for rendering HTML.
+Please refer to the samples-and-test for an example.
