@@ -10,12 +10,14 @@ import play.mvc.results.Result;
 import play.templates.Template;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 200 OK 
+ * 200 OK
  */
 public class RenderPDFTemplate extends Result {
 
@@ -50,7 +52,7 @@ public class RenderPDFTemplate extends Result {
 
             Map properties = new HashMap();
             String uri = request.url;
-
+            // TODO: The page size should be configurable
             try {
                 transformer.transform(new ByteArrayInputStream(content.getBytes("UTF-8")), uri, IHtmlToPdfTransformer.A4P, new ArrayList(),
                         properties, response.out);
@@ -61,6 +63,26 @@ public class RenderPDFTemplate extends Result {
             catch (final Exception e) {
                 throw new UnexpectedException(e);
             } // end catch
+        } catch (Exception e) {
+            throw new UnexpectedException(e);
+        }
+    }
+
+    public static void writePDFAsFile(File file, Template template, Map<String, Object> args) {
+        try {
+            String content = template.render(args);
+            Map properties = new HashMap();
+            String uri = Play.applicationPath.toURI().toURL().toExternalForm();
+            FileOutputStream out = new FileOutputStream(file);
+             // TODO: The page size should be configurable
+            try {
+                transformer.transform(new ByteArrayInputStream(content.getBytes("UTF-8")), uri, IHtmlToPdfTransformer.A4P, new ArrayList(),
+                        properties, out);
+                out.close();
+            }
+            catch (final IHtmlToPdfTransformer.CConvertException e) {
+                throw e;
+            }
         } catch (Exception e) {
             throw new UnexpectedException(e);
         }

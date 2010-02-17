@@ -35,14 +35,17 @@ import play.templates.Template;
 import play.templates.TemplateLoader;
 import play.vfs.VirtualFile;
 
+import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 public class PDF {
 
-/**
+    /**
      * Render a specific template
+     *
      * @param templateName The template name
-     * @param args The template data
+     * @param args         The template data
      */
     public static void renderTemplateAsPDF(String templateName, Object... args) {
         // Template datas
@@ -66,7 +69,7 @@ public class PDF {
             Template template = TemplateLoader.load(templateName);
             throw new RenderPDFTemplate(template, templateBinding.data);
         } catch (TemplateNotFoundException ex) {
-            if(ex.isSourceAvailable()) {
+            if (ex.isSourceAvailable()) {
                 throw ex;
             }
             StackTraceElement element = PlayException.getInterestingStrackTraceElement(ex);
@@ -78,23 +81,24 @@ public class PDF {
         }
     }
 
-     /**
+    /**
      * Render the corresponding template
+     *
      * @param args The template data
      */
     public static void renderPDF(Object... args) {
         String templateName = null;
         final Http.Request request = Http.Request.current();
-        final String format =  request.format;
+        final String format = request.format;
 
         if (args.length > 0 && args[0] instanceof String && LocalvariablesNamesEnhancer.LocalVariablesNamesTracer.getAllLocalVariableNames(args[0]).isEmpty()) {
             templateName = args[0].toString();
         } else {
             templateName = request.action.replace(".", "/") + "." + (format == null ? "html" : format);
         }
-        if(templateName.startsWith("@")) {
+        if (templateName.startsWith("@")) {
             templateName = templateName.substring(1);
-            if(!templateName.contains(".")) {
+            if (!templateName.contains(".")) {
                 templateName = request.controller + "." + templateName;
             }
             templateName = templateName.replace(".", "/") + "." + (format == null ? "html" : format);
@@ -105,4 +109,68 @@ public class PDF {
         }
         renderTemplateAsPDF(templateName, args);
     }
+
+    public static void writePDF(File file, Object... args) {
+        String templateName = null;
+        final Http.Request request = Http.Request.current();
+        final String format = request.format;
+
+        if (args.length > 0 && args[0] instanceof String && LocalvariablesNamesEnhancer.LocalVariablesNamesTracer.getAllLocalVariableNames(args[0]).isEmpty()) {
+            templateName = args[0].toString();
+        } else {
+            templateName = request.action.replace(".", "/") + "." + (format == null ? "html" : format);
+        }
+        if (templateName.startsWith("@")) {
+            templateName = templateName.substring(1);
+            if (!templateName.contains(".")) {
+                templateName = request.controller + "." + templateName;
+            }
+            templateName = templateName.replace(".", "/") + "." + (format == null ? "html" : format);
+        }
+        VirtualFile template = Play.getVirtualFile(templateName);
+        if (template == null || !template.exists()) {
+            templateName = templateName.substring(0, templateName.lastIndexOf("." + format)) + ".html";
+        }
+         Scope.RenderArgs templateBinding = Scope.RenderArgs.current();
+         for (Object o : args) {
+            List<String> names = LocalvariablesNamesEnhancer.LocalVariablesNamesTracer.getAllLocalVariableNames(o);
+            for (String name : names) {
+                templateBinding.put(name, o);
+            }
+        }
+        templateBinding.put("session", Scope.Session.current());
+        templateBinding.put("request", Http.Request.current());
+        templateBinding.put("flash", Scope.Flash.current());
+        templateBinding.put("params", Scope.Params.current());
+        try {
+            templateBinding.put("errors", Validation.errors());
+        } catch (Exception ex) {
+            throw new UnexpectedException(ex);
+        }
+        writeTemplateAsPDF(file, templateName, templateBinding.data);
+    }
+
+    /**
+     * Render a specific template
+     *
+     * @param templateName The template name
+     * @param args         The template data
+     */
+    public static void writeTemplateAsPDF(File file, String templateName, Map<String, Object> args) {
+        try {
+            Template template = TemplateLoader.load(templateName);
+            RenderPDFTemplate.writePDFAsFile(file, template, args);
+        } catch (TemplateNotFoundException ex) {
+            if (ex.isSourceAvailable()) {
+                throw ex;
+            }
+            StackTraceElement element = PlayException.getInterestingStrackTraceElement(ex);
+            if (element != null) {
+                throw new TemplateNotFoundException(templateName, Play.classes.getApplicationClass(element.getClassName()), element.getLineNumber());
+            } else {
+                throw ex;
+            }
+        }
+    }
+
 }
