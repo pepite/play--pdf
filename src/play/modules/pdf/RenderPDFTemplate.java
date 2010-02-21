@@ -52,6 +52,7 @@ public class RenderPDFTemplate extends Result {
 
     public void apply(Request request, Response response) {
         try {
+            // TODO: Refactor, this is similar as writePDF
             List headerFooterList = new ArrayList();
             IHtmlToPdfTransformer.PageSize pageSize = IHtmlToPdfTransformer.A4P;
             if (options != null) {
