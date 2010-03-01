@@ -174,12 +174,14 @@ public class PDF {
         final String format = request.format;
 
         Options options = null;
+        String localTemplateName = (args.length > 0 && args[0] instanceof String)? args[0].toString() : null;
         if (args.length > 0 && args[0] instanceof Options) {
             options = (Options) args[0];
+            localTemplateName = (args.length > 1 && args[1] instanceof String)? args[1].toString() : null;
         }
 
-        if (args.length > 0 && args[0] instanceof String && LocalvariablesNamesEnhancer.LocalVariablesNamesTracer.getAllLocalVariableNames(args[0]).isEmpty()) {
-            templateName = args[0].toString();
+        if (localTemplateName != null && LocalvariablesNamesEnhancer.LocalVariablesNamesTracer.getAllLocalVariableNames(localTemplateName).isEmpty()) {
+            templateName = localTemplateName;
         } else {
             templateName = request.action.replace(".", "/") + "." + (format == null ? "html" : format);
         }
