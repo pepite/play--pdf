@@ -55,34 +55,25 @@ public class RenderPDFTemplate extends Result {
         try {
             // TODO: Refactor, this is similar as writePDF
             List headerFooterList = new ArrayList();
-            IHtmlToPdfTransformer.PageSize pageSize = IHtmlToPdfTransformer.A4P;
-            if (options != null) {
-                if (!StringUtils.isEmpty(options.HEADER))
-                    headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.HEADER, IHtmlToPdfTransformer.CHeaderFooter.HEADER));
-                if (!StringUtils.isEmpty(options.ALL_PAGES))
-                    headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.ALL_PAGES, IHtmlToPdfTransformer.CHeaderFooter.ALL_PAGES));
-                if (!StringUtils.isEmpty(options.EVEN_PAGES))
-                    headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.EVEN_PAGES, IHtmlToPdfTransformer.CHeaderFooter.EVEN_PAGES));
-                if (!StringUtils.isEmpty(options.FOOTER))
-                    headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.FOOTER, IHtmlToPdfTransformer.CHeaderFooter.FOOTER));
-                if (!StringUtils.isEmpty(options.ODD_PAGES))
-                    headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.ODD_PAGES, IHtmlToPdfTransformer.CHeaderFooter.ODD_PAGES));
-                pageSize = options.pageSize;
-            }
+            if (!StringUtils.isEmpty(options.HEADER))
+                headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.HEADER, IHtmlToPdfTransformer.CHeaderFooter.HEADER));
+            if (!StringUtils.isEmpty(options.ALL_PAGES))
+                headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.ALL_PAGES, IHtmlToPdfTransformer.CHeaderFooter.ALL_PAGES));
+            if (!StringUtils.isEmpty(options.EVEN_PAGES))
+                headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.EVEN_PAGES, IHtmlToPdfTransformer.CHeaderFooter.EVEN_PAGES));
+            if (!StringUtils.isEmpty(options.FOOTER))
+                headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.FOOTER, IHtmlToPdfTransformer.CHeaderFooter.FOOTER));
+            if (!StringUtils.isEmpty(options.ODD_PAGES))
+                headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.ODD_PAGES, IHtmlToPdfTransformer.CHeaderFooter.ODD_PAGES));
 
-            if (options.filename != null) {
-                response.setHeader("Content-Disposition", "inline; filename=\"" + options.filename + "\"");
-            } else {
-                String name = FilenameUtils.getBaseName(template.name) + ".pdf";
-                response.setHeader("Content-Disposition", "inline; filename=\"" + name + "\"");
-            }
+            response.setHeader("Content-Disposition", "inline; filename=\"" + options.filename + "\"");
             setContentTypeIfNotSet(response, "application/pdf");
 
             Map properties = new HashMap();
             String uri = request.url;
             // TODO: The page size should be configurable
             try {
-                transformer.transform(new ByteArrayInputStream(content.getBytes("UTF-8")), uri, pageSize, headerFooterList,
+                transformer.transform(new ByteArrayInputStream(content.getBytes("UTF-8")), uri, options.pageSize, headerFooterList,
                         properties, response.out);
             }
             catch (final IHtmlToPdfTransformer.CConvertException e) {
@@ -132,6 +123,5 @@ public class RenderPDFTemplate extends Result {
         }
     }
 
-    
 
 }

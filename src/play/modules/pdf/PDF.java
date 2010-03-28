@@ -24,6 +24,7 @@
 package play.modules.pdf;
 
 import org.allcolor.yahp.converter.IHtmlToPdfTransformer;
+import org.apache.commons.io.FilenameUtils;
 import play.Play;
 import play.classloading.enhancers.LocalvariablesNamesEnhancer;
 import play.data.validation.Validation;
@@ -44,11 +45,11 @@ public class PDF {
 
     public static class Options {
 
-        public String FOOTER;
-        public String HEADER;
-        public String ALL_PAGES;
-        public String EVEN_PAGES;
-        public String ODD_PAGES;
+        public String FOOTER = null;
+        public String HEADER = null;
+        public String ALL_PAGES = null;
+        public String EVEN_PAGES = null;
+        public String ODD_PAGES = null;
         
         public String filename = null;
 
@@ -83,7 +84,12 @@ public class PDF {
         }
         try {
             Template template = TemplateLoader.load(templateName);
-            //
+            if (options == null) {
+                options = new Options();
+            }
+            if (options.filename == null) {
+                   options.filename = FilenameUtils.getBaseName(templateName) + ".pdf";
+            }
             throw new RenderPDFTemplate(template, templateBinding.data, options);
         } catch (TemplateNotFoundException ex) {
             if (ex.isSourceAvailable()) {
