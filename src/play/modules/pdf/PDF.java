@@ -23,6 +23,7 @@
  */
 package play.modules.pdf;
 
+import org.allcolor.yahp.converter.IHtmlToPdfTransformer;
 import play.Play;
 import play.classloading.enhancers.LocalvariablesNamesEnhancer;
 import play.data.validation.Validation;
@@ -41,44 +42,6 @@ import java.util.Map;
 
 public class PDF {
 
-    public static final int A0L = 0;
-    public static final int A0P = 1;
-    public static final int A10L = 2;
-    public static final int A10P = 3;
-    public static final int A11L = 4;
-    public static final int A11P = 5;
-    public static final int A12L = 6;
-    public static final int A12P = 7;
-    public static final int A13L = 8;
-    public static final int A13P = 9;
-    public static final int A14L = 10;
-    public static final int A14P = 11;
-    public static final int A1L = 12;
-    public static final int A1P = 13;
-    public static final int A2L = 14;
-    public static final int A2P = 15;
-    public static final int A3L = 16;
-    public static final int A3P = 17;
-    public static final int A4L = 18;
-    public static final int A4P = 19;
-    public static final int A5L = 20;
-    public static final int A5P = 21;
-    public static final int A6L = 22;
-    public static final int A6P = 23;
-    public static final int A7L = 24;
-    public static final int A7P = 25;
-    public static final int A8L = 26;
-    public static final int A8P = 27;
-    public static final int A9L = 28;
-    public static final int A9P = 29;
-    public static final int LETTERL = 30;
-    public static final int LETTERP = 31;
-    public static final int LEGALL = 32;
-    public static final int LEGALP = 33;
-    public static final int JUNIOR_LEGALL = 34;
-    public static final int JUNIOR_LEGALP = 35;
-
-
     public static class Options {
 
         public String FOOTER;
@@ -86,9 +49,12 @@ public class PDF {
         public String ALL_PAGES;
         public String EVEN_PAGES;
         public String ODD_PAGES;
+        
+        public String filename = null;
 
-        public int pageSize = A4P;
+        public IHtmlToPdfTransformer.PageSize pageSize = IHtmlToPdfTransformer.A4P;
     }
+
 
     /**
      * Render a specific template
@@ -226,6 +192,7 @@ public class PDF {
         try {
             Template template = TemplateLoader.load(templateName);
             RenderPDFTemplate.writePDFAsFile(file, template, options, args);
+
         } catch (TemplateNotFoundException ex) {
             if (ex.isSourceAvailable()) {
                 throw ex;

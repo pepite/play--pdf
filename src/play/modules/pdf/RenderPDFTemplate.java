@@ -1,7 +1,8 @@
 package play.modules.pdf;
 
 import org.allcolor.yahp.converter.IHtmlToPdfTransformer;
-import org.hsqldb.lib.StringUtil;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
 import play.Logger;
 import play.Play;
 import play.exceptions.UnexpectedException;
@@ -56,20 +57,25 @@ public class RenderPDFTemplate extends Result {
             List headerFooterList = new ArrayList();
             IHtmlToPdfTransformer.PageSize pageSize = IHtmlToPdfTransformer.A4P;
             if (options != null) {
-                if (!StringUtil.isEmpty(options.HEADER))
+                if (!StringUtils.isEmpty(options.HEADER))
                     headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.HEADER, IHtmlToPdfTransformer.CHeaderFooter.HEADER));
-                if (!StringUtil.isEmpty(options.ALL_PAGES))
+                if (!StringUtils.isEmpty(options.ALL_PAGES))
                     headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.ALL_PAGES, IHtmlToPdfTransformer.CHeaderFooter.ALL_PAGES));
-                if (!StringUtil.isEmpty(options.EVEN_PAGES))
+                if (!StringUtils.isEmpty(options.EVEN_PAGES))
                     headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.EVEN_PAGES, IHtmlToPdfTransformer.CHeaderFooter.EVEN_PAGES));
-                if (!StringUtil.isEmpty(options.FOOTER))
+                if (!StringUtils.isEmpty(options.FOOTER))
                     headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.FOOTER, IHtmlToPdfTransformer.CHeaderFooter.FOOTER));
-                if (!StringUtil.isEmpty(options.ODD_PAGES))
+                if (!StringUtils.isEmpty(options.ODD_PAGES))
                     headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.ODD_PAGES, IHtmlToPdfTransformer.CHeaderFooter.ODD_PAGES));
-                pageSize = toPageSize(options.pageSize);
+                pageSize = options.pageSize;
             }
 
-            response.setHeader("Content-Disposition", "inline; filename=\"" + template.name + "\"");
+            if (options.filename != null) {
+                response.setHeader("Content-Disposition", "inline; filename=\"" + options.filename + "\"");
+            } else {
+                String name = FilenameUtils.getBaseName(template.name) + ".pdf";
+                response.setHeader("Content-Disposition", "inline; filename=\"" + name + "\"");
+            }
             setContentTypeIfNotSet(response, "application/pdf");
 
             Map properties = new HashMap();
@@ -95,27 +101,27 @@ public class RenderPDFTemplate extends Result {
             List headerFooterList = new ArrayList();
             IHtmlToPdfTransformer.PageSize pageSize = IHtmlToPdfTransformer.A4P;
             if (options != null) {
-                if (!StringUtil.isEmpty(options.HEADER))
+                if (!StringUtils.isEmpty(options.HEADER))
                     headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.HEADER, IHtmlToPdfTransformer.CHeaderFooter.HEADER));
-                if (!StringUtil.isEmpty(options.ALL_PAGES))
+                if (!StringUtils.isEmpty(options.ALL_PAGES))
                     headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.ALL_PAGES, IHtmlToPdfTransformer.CHeaderFooter.ALL_PAGES));
-                if (!StringUtil.isEmpty(options.EVEN_PAGES))
+                if (!StringUtils.isEmpty(options.EVEN_PAGES))
                     headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.EVEN_PAGES, IHtmlToPdfTransformer.CHeaderFooter.EVEN_PAGES));
-                if (!StringUtil.isEmpty(options.FOOTER))
+                if (!StringUtils.isEmpty(options.FOOTER))
                     headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.FOOTER, IHtmlToPdfTransformer.CHeaderFooter.FOOTER));
-                if (!StringUtil.isEmpty(options.ODD_PAGES))
+                if (!StringUtils.isEmpty(options.ODD_PAGES))
                     headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.ODD_PAGES, IHtmlToPdfTransformer.CHeaderFooter.ODD_PAGES));
-                pageSize = toPageSize(options.pageSize);
+                pageSize = options.pageSize;
             }
 
             String content = template.render(args);
             Map properties = new HashMap();
             String uri = Play.applicationPath.toURI().toURL().toExternalForm();
             FileOutputStream out = new FileOutputStream(file);
-            // TODO: The page size should be configurable
             try {
                 transformer.transform(new ByteArrayInputStream(content.getBytes("UTF-8")), uri, pageSize, headerFooterList,
                         properties, out);
+                out.flush();
                 out.close();
             }
             catch (final IHtmlToPdfTransformer.CConvertException e) {
@@ -126,86 +132,6 @@ public class RenderPDFTemplate extends Result {
         }
     }
 
-    private static IHtmlToPdfTransformer.PageSize toPageSize(int pageSize) {
-        switch (pageSize) {
-            case PDF.A0L:
-                return IHtmlToPdfTransformer.A0L;
-            case PDF.A0P:
-                return IHtmlToPdfTransformer.A0P;
-            case PDF.A10L:
-                return IHtmlToPdfTransformer.A10L;
-            case PDF.A10P:
-                return IHtmlToPdfTransformer.A10P;
-            case PDF.A11L:
-                return IHtmlToPdfTransformer.A11L;
-            case PDF.A11P:
-                return IHtmlToPdfTransformer.A11P;
-            case PDF.A12L:
-                return IHtmlToPdfTransformer.A12L;
-            case PDF.A12P:
-                return IHtmlToPdfTransformer.A12P;
-            case PDF.A13L:
-                return IHtmlToPdfTransformer.A13L;
-            case PDF.A13P:
-                return IHtmlToPdfTransformer.A13P;
-            case PDF.A14L:
-                return IHtmlToPdfTransformer.A14L;
-            case PDF.A14P:
-                return IHtmlToPdfTransformer.A14P;
-            case PDF.A1L:
-                return IHtmlToPdfTransformer.A1L;
-            case PDF.A1P:
-                return IHtmlToPdfTransformer.A1P;
-            case PDF.A2L:
-                return IHtmlToPdfTransformer.A2L;
-            case PDF.A2P:
-                return IHtmlToPdfTransformer.A2P;
-            case PDF.A3L:
-                return IHtmlToPdfTransformer.A3L;
-            case PDF.A3P:
-                return IHtmlToPdfTransformer.A3P;
-            case PDF.A4L:
-                return IHtmlToPdfTransformer.A4L;
-            case PDF.A4P:
-                return IHtmlToPdfTransformer.A4P;
-            case PDF.A5L:
-                return IHtmlToPdfTransformer.A5L;
-            case PDF.A5P:
-                return IHtmlToPdfTransformer.A5P;
-            case PDF.A6L:
-                return IHtmlToPdfTransformer.A6L;
-            case PDF.A6P:
-                return IHtmlToPdfTransformer.A6P;
-            case PDF.A7L:
-                return IHtmlToPdfTransformer.A7L;
-            case PDF.A7P:
-                return IHtmlToPdfTransformer.A7P;
-            case PDF.A8L:
-                return IHtmlToPdfTransformer.A8L;
-            case PDF.A8P:
-                return IHtmlToPdfTransformer.A8P;
-            case PDF.A9L:
-                return IHtmlToPdfTransformer.A9L;
-            case PDF.A9P:
-                return IHtmlToPdfTransformer.A9P;
-            case PDF.LETTERL:
-                return IHtmlToPdfTransformer.LETTERL;
-            case PDF.LETTERP:
-                return IHtmlToPdfTransformer.LETTERP;
-            case PDF.LEGALL:
-                return IHtmlToPdfTransformer.LEGALL;
-            case PDF.LEGALP:
-                return IHtmlToPdfTransformer.LEGALP;
-            case PDF.JUNIOR_LEGALL:
-                return IHtmlToPdfTransformer.JUNIOR_LEGALL;
-            case PDF.JUNIOR_LEGALP:
-                return IHtmlToPdfTransformer.JUNIOR_LEGALP;
-            default:
-                throw new UnexpectedException("Unknown page size");
-
-        }
-
-    }
-
+    
 
 }
