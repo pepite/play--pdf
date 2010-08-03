@@ -1,7 +1,6 @@
 package play.modules.pdf;
 
 import org.allcolor.yahp.converter.IHtmlToPdfTransformer;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import play.Logger;
 import play.Play;
@@ -69,7 +68,7 @@ public class RenderPDFTemplate extends Result {
             response.setHeader("Content-Disposition", "inline; filename=\"" + options.filename + "\"");
             setContentTypeIfNotSet(response, "application/pdf");
 
-            Map properties = new HashMap();
+            Map properties = Play.configuration;
             String uri = request.url;
             // TODO: The page size should be configurable
             try {
@@ -106,7 +105,7 @@ public class RenderPDFTemplate extends Result {
             }
 
             String content = template.render(args);
-            Map properties = new HashMap();
+            Map properties = Play.configuration;
             String uri = Play.applicationPath.toURI().toURL().toExternalForm();
             FileOutputStream out = new FileOutputStream(file);
             try {

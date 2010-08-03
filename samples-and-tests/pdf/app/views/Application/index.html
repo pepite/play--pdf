@@ -1,4 +1,17 @@
-#{extends 'main.html' /}
-#{set title:'Home' /}
+<html>
+    <head>
+        <title>Play manual - ${title}</title>
+        <link rel="stylesheet" href="@{'/public/stylesheets/main.css'}" type="text/css" charset="utf-8">
+    </head>
+    <body>
+        <div id="main">
+            <div id="body">
+                <div id="page">
 
-#{welcome /}
+                    ${html.raw()}
+
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

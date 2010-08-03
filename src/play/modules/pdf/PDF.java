@@ -135,7 +135,10 @@ public class PDF {
         }
         VirtualFile file = Play.getVirtualFile(templateName);
         if (file == null || !file.exists()) {
-            templateName = templateName.substring(0, templateName.lastIndexOf("." + format)) + ".html";
+            if (templateName.lastIndexOf("." + format) != -1) {
+                templateName = templateName.substring(0, templateName.lastIndexOf("." + format)) + ".html";
+            }
+            
         }
         renderTemplateAsPDF(templateName, options, args);
     }
