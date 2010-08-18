@@ -40,7 +40,7 @@ public class Application extends Controller {
         }
 
         Options options = new Options();
-        options.FOOTER = "<span style='font-size: 8pt;font-style:italic;color: #666;'> Generated with playframework pdf module.</span><span style=\"float: right;font-size: 8pt;font-style:italic;color: #666;\">Page <pagenumber>/<pagecount></span>";
+        options.FOOTER = "<span style='font-size: 8pt;font-style:italic;color: #666;'> Generated with playframework pdf module.</span><span style=\" color: rgb(141, 172, 38);float: right;font-size: 8pt;\">Page <pagenumber>/<pagecount></span>";
         options.filename = "Playframework manual";
         renderPDF(options, html, title);
     }
@@ -48,9 +48,10 @@ public class Application extends Controller {
     private static String getTextile(String pageId) throws IOException {
         File page = new File(Play.frameworkPath + "/documentation/manual/" + pageId + ".textile");
         // We don't want to render the first one.
-        Logger.info("PAGE " + page);
         if (!page.exists()) {
-            notFound("Manual page for " + pageId + " not found");
+            // Ignore
+            //notFound("Manual page for " + pageId + " not found");
+            return "";
         }
         String textile = IO.readContentAsString(page);
         return textile;
