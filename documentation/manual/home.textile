@@ -60,6 +60,7 @@ option. If you wish to override it you can use the !important flag on every CSS 
 
 h4. Paging tables
 
-If you want your table headers to follow on page breaks, use <thead> and the following special CSS attribute on your table:
+If you want your table headers to follow on page breaks, use the thead element for your header rows and the following
+special CSS attribute on your table:
 
 bc. -fs-table-paginate: paginate;
