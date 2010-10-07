@@ -46,7 +46,9 @@ public class PDF {
     public static class Options {
 
         public String FOOTER = null;
+        public String FOOTER_TEMPLATE = null;
         public String HEADER = null;
+        public String HEADER_TEMPLATE = null;
         public String ALL_PAGES = null;
         public String EVEN_PAGES = null;
         public String ODD_PAGES = null;

@@ -1,14 +1,19 @@
 package play.modules.pdf;
 
 import org.allcolor.yahp.converter.IHtmlToPdfTransformer;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import play.Logger;
 import play.Play;
+import play.exceptions.PlayException;
+import play.exceptions.TemplateNotFoundException;
 import play.exceptions.UnexpectedException;
+import play.modules.pdf.PDF.Options;
 import play.mvc.Http.Request;
 import play.mvc.Http.Response;
 import play.mvc.results.Result;
 import play.templates.Template;
+import play.templates.TemplateLoader;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -27,10 +32,9 @@ public class RenderPDFTemplate extends Result {
     private String content;
     private PDF.Options options;
 
-    public RenderPDFTemplate(Template template, Map<String, Object> args, PDF.Options options) {
-        this.template = template;
-        this.content = template.render(args);
-        this.options = options;
+    public RenderPDFTemplate(Template template, Map<String, Object> args, PDF.Options options) throws TemplateNotFoundException {
+    	this(template, template.render(args), options);
+    	loadHeader(args);
     }
 
     public RenderPDFTemplate(Template template, String content, PDF.Options options) {
@@ -39,7 +43,22 @@ public class RenderPDFTemplate extends Result {
         this.options = options;
     }
 
-    protected static IHtmlToPdfTransformer transformer;
+    private void loadHeader(Map<String, Object> args) throws TemplateNotFoundException {
+    	if(!StringUtils.isEmpty(options.HEADER_TEMPLATE)){
+    		Template template = TemplateLoader.load(options.HEADER_TEMPLATE);
+    		HashMap<String, Object> args2 = new HashMap<String, Object>(args);
+    		args2.remove("out");
+    		options.HEADER = template.render(args2);
+    	}
+    	if(!StringUtils.isEmpty(options.FOOTER_TEMPLATE)){
+    		Template template = TemplateLoader.load(options.FOOTER_TEMPLATE);
+    		HashMap<String, Object> args2 = new HashMap<String, Object>(args);
+    		args2.remove("out");
+    		options.FOOTER = template.render(args2);
+    	}
+	}
+
+	protected static IHtmlToPdfTransformer transformer;
 
     static {
         try {
@@ -69,7 +88,7 @@ public class RenderPDFTemplate extends Result {
             setContentTypeIfNotSet(response, "application/pdf");
 
             Map properties = Play.configuration;
-            String uri = request.url;
+            String uri = request.getBase()+request.url;
             // TODO: The page size should be configurable
             try {
                 transformer.transform(new ByteArrayInputStream(content.getBytes("UTF-8")), uri, options.pageSize, headerFooterList,
