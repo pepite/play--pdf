@@ -9,6 +9,7 @@ import play.exceptions.PlayException;
 import play.exceptions.TemplateNotFoundException;
 import play.exceptions.UnexpectedException;
 import play.modules.pdf.PDF.Options;
+import play.mvc.Http.Header;
 import play.mvc.Http.Request;
 import play.mvc.Http.Response;
 import play.mvc.results.Result;
@@ -86,6 +87,9 @@ public class RenderPDFTemplate extends Result {
 
             response.setHeader("Content-Disposition", "inline; filename=\"" + options.filename + "\"");
             setContentTypeIfNotSet(response, "application/pdf");
+            // FIX IE bug when using SSL
+            if(request.secure && isIE(request))
+            	response.setHeader("Cache-Control", "");
 
             Map properties = Play.configuration;
             String uri = request.getBase()+request.url;
@@ -105,7 +109,15 @@ public class RenderPDFTemplate extends Result {
         }
     }
 
-    public static void writePDFAsFile(File file, Template template, PDF.Options options, Map<String, Object> args) {
+    private boolean isIE(Request request) {
+		if(!request.headers.containsKey("user-agent"))
+			return false;
+		
+		Header userAgent = request.headers.get("user-agent");
+		return userAgent.value().contains("MSIE");
+	}
+
+	public static void writePDFAsFile(File file, Template template, PDF.Options options, Map<String, Object> args) {
         try {
             List headerFooterList = new ArrayList();
             IHtmlToPdfTransformer.PageSize pageSize = IHtmlToPdfTransformer.A4P;
