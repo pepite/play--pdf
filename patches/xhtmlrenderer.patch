@@ -1,0 +1,55 @@
+Only in xhtmlrenderer: build
+diff -x '*.class' -r xhtmlrenderer-orig/org/xhtmlrenderer/pdf/ITextOutputDevice.java xhtmlrenderer/org/xhtmlrenderer/pdf/ITextOutputDevice.java
+172c172
+<       //  processLink(c, box);
+---
+>         processLink(c, box);
+226a227
+>             	uri = decodeEntities(uri);
+443,449c444,445
+<         // Entitie...
+< 
+<         s = StringEscapeUtils.unescapeHtml(s);
+<         s = s.replaceAll("&lt;", "<");
+<         s = s.replaceAll("&gt;", ">");
+<         s = s.replaceAll("&quote;", "\"");
+<         s = s.replaceAll("&apos;", "'");
+---
+>         // Entities...
+>         s = decodeEntities(s);
+473c469,478
+<     private PdfTextArray makeJustificationArray(String s, JustificationInfo info) {
+---
+>     public static String decodeEntities(String s) {
+>         s = StringEscapeUtils.unescapeHtml(s);
+>         s = s.replaceAll("&lt;", "<");
+>         s = s.replaceAll("&gt;", ">");
+>         s = s.replaceAll("&quote;", "\"");
+>         s = s.replaceAll("&apos;", "'");
+>         return s;
+> 	}
+> 
+> 	private PdfTextArray makeJustificationArray(String s, JustificationInfo info) {
+777a783
+>             url = new URL(decodeEntities(url.toExternalForm()));
+diff -x '*.class' -r xhtmlrenderer-orig/org/xhtmlrenderer/swing/NaiveUserAgent.java xhtmlrenderer/org/xhtmlrenderer/swing/NaiveUserAgent.java
+21a22
+> import org.xhtmlrenderer.pdf.ITextOutputDevice;
+275a277,279
+>         // stef: we fix this because for some crazy reason uris get html escaping in html attributes and are not decoded
+>         // by what parses it
+>         uri = ITextOutputDevice.decodeEntities(uri);
+278,280c282,290
+<             if (uri.startsWith("http://"))
+<                 uri = Play.getVirtualFile((new URL(uri)).getPath()).getRealFile().toURI().toURL().toExternalForm();
+<             uri = Play.getVirtualFile(uri).getRealFile().toURI().toURL().toExternalForm();
+---
+>         	// try to find it in play
+>         	String path;
+>             if (uri.startsWith("http://") || uri.startsWith("https://"))
+>                 path = new URL(uri).getPath();
+>             else
+>             	path = uri;
+>             VirtualFile file = Play.getVirtualFile(path);
+>             if(file.exists())
+>             	uri = file.getRealFile().toURI().toURL().toExternalForm();
