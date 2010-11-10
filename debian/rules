@@ -8,71 +8,24 @@
 #export DH_VERBOSE=1
 #export DH_COMPAT=3
 
-VERSION=0.2
+VERSION=0.3
 MODULE_NAME=pdf
 PLAY_VERSION=1.1
-APP=play-1.1-pdf-module-0.2
+APP=play-1.1-$(MODULE_NAME)-module-$(VERSION)
 MODULE=$(MODULE_NAME)-$(VERSION)
 
 DEB_PATH=debian/$(APP)
 INSTALL_PATH=/usr/share/play-modules/$(PLAY_VERSION)/$(MODULE)
 DOC_INSTALL_PATH=/usr/share/doc/$(APP)
 
-configure: configure-stamp
-configure-stamp:
-	dh_testdir
-	touch configure-stamp
+%:
+	dh  $@
 
-
-build: configure-stamp build-stamp
-build-stamp:
-	dh_testdir
-	dh_clean
+override_dh_auto_build: 
 	/bin/echo -e '\n\n' | play-$(PLAY_VERSION) build-module
-	touch build-stamp
 
-clean:
-	dh_testdir
-	dh_testroot
-	rm -f build-stamp configure-stamp
-	dh_clean
-
-
-install: 
-	dh_testdir
-	dh_testroot
-	dh_clean -k
-	dh_installdirs
+override_dh_auto_install: 
 	install -d $(DEB_PATH)$(INSTALL_PATH)
-	rsync -r --exclude .svn --exclude .CVS app dist lib src public $(DEB_PATH)$(INSTALL_PATH)
+	rsync -r --exclude .svn --exclude .CVS app lib src public $(DEB_PATH)$(INSTALL_PATH)
 	install -d $(DEB_PATH)$(DOC_INSTALL_PATH)
 	rsync -r --exclude .svn --exclude .CVS README $(DEB_PATH)$(DOC_INSTALL_PATH)
-
-
-# Build architecture-dependent files here.
-binary-arch: build install
-	dh_testdir
-	dh_testroot
-	dh_installdocs
-	dh_installexamples
-	dh_installmenu
-	dh_installinit
-	dh_installcron
-#	dh_installmanpages
-	dh_installchangelogs 
-	dh_link
-	dh_strip
-	dh_compress
-	dh_fixperms
-	dh_installdeb
-	dh_perl 
-	dh_shlibdeps
-	dh_gencontrol
-	dh_md5sums
-	dh_builddeb
-
-source diff:                                                                  
-	@echo >&2 'source and diff are obsolete - use dpkg-source -b'; false
-
-binary: binary-arch
-.PHONY: build clean binary-indep binary-arch binary
