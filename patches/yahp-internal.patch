@@ -1,0 +1,33 @@
+diff -ru --exclude '*.class' yahp-internal-orig//org/allcolor/yahp/cl/converter/CHtmlToPdfFlyingSaucerTransformer.java yahp-internal//org/allcolor/yahp/cl/converter/CHtmlToPdfFlyingSaucerTransformer.java
+--- yahp-internal-orig//org/allcolor/yahp/cl/converter/CHtmlToPdfFlyingSaucerTransformer.java	2010-08-01 00:09:28.000000000 +0200
++++ yahp-internal//org/allcolor/yahp/cl/converter/CHtmlToPdfFlyingSaucerTransformer.java	2010-11-10 10:50:49.206977007 +0100
+@@ -417,7 +417,10 @@
+         if (parser != null) {
+             return parser;
+         }
+-        final CShaniDomParser ret = new CShaniDomParser(true, true);
++        // STEF: we don't want validation as it calls the w3c to retrieve DTDs and they throttle Java clients
++        final CShaniDomParser ret = new CShaniDomParser(true, false);
++        ret.setAutodoctype(false);
++        ret.setIgnoreDTD(true);
+         this.tlparser.set(new SoftReference(ret));
+         return ret;
+     }
+@@ -487,9 +490,6 @@
+                                 final OutputStream out) throws CConvertException {
+         final List files = new ArrayList();
+         try {
+-             log.info("ZXZXZ");
+-             log.info("ZXZXZ");
+-             log.info("ZXZXZ");
+             final Tidy tidy = this.getTidy();
+             final CShaniDomParser parser = this.getCShaniDomParser();
+             final _ITextRenderer renderer = this.getITextRenderer();
+@@ -516,7 +516,6 @@
+                                 .toString())));
+             }
+ 
+-            log.info("ZXZXZ");
+ //            this.convertInputToVisibleHTML(theDoc);
+ //            this.convertComboboxToVisibleHTML(theDoc);
+ //            this.convertTextAreaToVisibleHTML(theDoc);
