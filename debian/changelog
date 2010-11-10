@@ -1,6 +1,8 @@
 play-1.1-pdf-module-0.3 (0.3) maverick; urgency=low
 
   * Fixed validation that hung when the xml parser tried to get a DTD from the W3C site
+  * Fixed https URLs (should be looked up by Play!)
+  * Fixed IE bug when using https, content-disposition and cache headers
 
  -- Stephane Epardaud <stephane@epardaud.fr>  Wed, 10 Nov 2010 11:02:26 +0100
 
