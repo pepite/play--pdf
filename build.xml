@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <project name="PDF module" default="build" basedir=".">
 
-    <property file="./build.properties" />
+    <property file="build.properties" />
 
     <path id="project.classpath">
         <pathelement path="${play.path}/framework/classes"/>
         <fileset dir="${play.path}/framework/lib">
-                <include name="*.jar"/>
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${play.path}/framework">
+            <include name="*.jar"/>
         </fileset>
         <fileset dir="lib">
             <include name="*.jar"/>
@@ -25,7 +29,7 @@
         </copy>
         <jar destfile="lib/play-pdf.jar" basedir="tmp/classes">
             <manifest>
-                <section name="Play">
+                <section name="Play-module">
                     <attribute name="Specification-Title" value="PDF module"/>
                 </section>
             </manifest>
