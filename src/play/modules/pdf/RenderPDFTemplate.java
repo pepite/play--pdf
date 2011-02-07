@@ -1,10 +1,9 @@
 package play.modules.pdf;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.allcolor.yahp.converter.IHtmlToPdfTransformer;
@@ -14,6 +13,10 @@ import play.Logger;
 import play.Play;
 import play.exceptions.TemplateNotFoundException;
 import play.exceptions.UnexpectedException;
+import play.modules.pdf.PDF.MultiPDFDocuments;
+import play.modules.pdf.PDF.Options;
+import play.modules.pdf.PDF.PDFDocument;
+import play.mvc.Http;
 import play.mvc.Http.Header;
 import play.mvc.Http.Request;
 import play.mvc.Http.Response;
@@ -21,28 +24,47 @@ import play.mvc.results.Result;
 import play.templates.Template;
 import play.templates.TemplateLoader;
 
+import com.lowagie.text.Document;
+import com.lowagie.text.pdf.PdfCopy;
+import com.lowagie.text.pdf.PdfReader;
+
 /**
  * 200 OK
  */
 public class RenderPDFTemplate extends Result {
 
-    public Template template;
-    private String content;
-    private PDF.Options options;
-    private List headerFooterList = new ArrayList();
+	private static final long serialVersionUID = 6238738409770109140L;
 
-    public RenderPDFTemplate(Template template, Map<String, Object> args, PDF.Options options) throws TemplateNotFoundException {
-    	this(template, template.render(args), options);
-    	loadHeaderAndFooter(args);
+	protected static IHtmlToPdfTransformer transformer;
+
+    static {
+        try {
+            transformer = (IHtmlToPdfTransformer) Play.classloader.loadClass(IHtmlToPdfTransformer.DEFAULT_PDF_RENDERER)
+                    .newInstance();
+        } catch (Exception e) {
+            Logger.error("Exception initializing pdf module", e);
+        }
     }
 
-    public RenderPDFTemplate(Template template, String content, PDF.Options options) {
-        this.template = template;
-        this.content = content;
-        this.options = options;
+    private MultiPDFDocuments docs;
+
+	public RenderPDFTemplate(MultiPDFDocuments docs, Map<String, Object> args) throws TemplateNotFoundException {
+    	this.docs = docs;
+    	renderDocuments(args);
     }
 
-    private void loadHeaderAndFooter(Map<String, Object> args) throws TemplateNotFoundException {
+    private void renderDocuments(Map<String, Object> args) {
+    	for(PDFDocument doc : docs.documents){
+    		Request request = Http.Request.current();
+        	String templateName = PDF.resolveTemplateName(doc.template, request, request.format);
+            Template template = TemplateLoader.load(templateName);
+    		doc.content = template.render(args);
+    		loadHeaderAndFooter(doc, args);
+    	}
+	}
+
+	private void loadHeaderAndFooter(PDFDocument doc, Map<String, Object> args) throws TemplateNotFoundException {
+    	Options options = doc.options;
     	if(!StringUtils.isEmpty(options.HEADER_TEMPLATE)){
     		Template template = TemplateLoader.load(options.HEADER_TEMPLATE);
     		HashMap<String, Object> args2 = new HashMap<String, Object>(args);
@@ -56,31 +78,20 @@ public class RenderPDFTemplate extends Result {
     		options.FOOTER = template.render(args2);
     	}
         if (!StringUtils.isEmpty(options.HEADER))
-            headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.HEADER, IHtmlToPdfTransformer.CHeaderFooter.HEADER));
+            doc.headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.HEADER, IHtmlToPdfTransformer.CHeaderFooter.HEADER));
         if (!StringUtils.isEmpty(options.ALL_PAGES))
-            headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.ALL_PAGES, IHtmlToPdfTransformer.CHeaderFooter.ALL_PAGES));
+        	doc.headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.ALL_PAGES, IHtmlToPdfTransformer.CHeaderFooter.ALL_PAGES));
         if (!StringUtils.isEmpty(options.EVEN_PAGES))
-            headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.EVEN_PAGES, IHtmlToPdfTransformer.CHeaderFooter.EVEN_PAGES));
+        	doc.headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.EVEN_PAGES, IHtmlToPdfTransformer.CHeaderFooter.EVEN_PAGES));
         if (!StringUtils.isEmpty(options.FOOTER))
-            headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.FOOTER, IHtmlToPdfTransformer.CHeaderFooter.FOOTER));
+        	doc.headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.FOOTER, IHtmlToPdfTransformer.CHeaderFooter.FOOTER));
         if (!StringUtils.isEmpty(options.ODD_PAGES))
-            headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.ODD_PAGES, IHtmlToPdfTransformer.CHeaderFooter.ODD_PAGES));
+        	doc.headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.ODD_PAGES, IHtmlToPdfTransformer.CHeaderFooter.ODD_PAGES));
 	}
-
-	protected static IHtmlToPdfTransformer transformer;
-
-    static {
-        try {
-            transformer = (IHtmlToPdfTransformer) Play.classloader.loadClass(IHtmlToPdfTransformer.DEFAULT_PDF_RENDERER)
-                    .newInstance();
-        } catch (Exception e) {
-            Logger.error("Exception initializing pdf module", e);
-        }
-    }
 
     public void apply(Request request, Response response) {
         try {
-            response.setHeader("Content-Disposition", "inline; filename=\"" + options.filename + "\"");
+            response.setHeader("Content-Disposition", "inline; filename=\"" + docs.filename + "\"");
             setContentTypeIfNotSet(response, "application/pdf");
             // FIX IE bug when using SSL
             if(request.secure && isIE(request))
@@ -101,13 +112,37 @@ public class RenderPDFTemplate extends Result {
 	}
 
 	private void renderPDF(OutputStream out, Request request, Response response) throws Exception {
-        Map properties = Play.configuration;
+        Map<?,?> properties = Play.configuration;
         String uri = request.getBase()+request.url;
-        transformer.transform(new ByteArrayInputStream(content.getBytes("UTF-8")), 
-        		uri, options.pageSize, headerFooterList,
-        		properties, out);
+        if(docs.documents.size() == 1){
+        	renderDoc(docs.documents.get(0), uri, properties, out);
+        }else{
+        	// we need to concatenate them all
+        	Document resultDocument = new Document();
+        	PdfCopy copy = new PdfCopy(resultDocument, out);
+        	resultDocument.open();
+        	ByteArrayOutputStream os = new ByteArrayOutputStream();
+        	for(PDFDocument doc : docs.documents){
+        		os.reset();
+        		renderDoc(doc, uri, properties, os);
+        		PdfReader pdfReader = new PdfReader(os.toByteArray());
+        		int n = pdfReader.getNumberOfPages();
+        		for(int i=0;i<n;i++){
+        			copy.addPage(copy.getImportedPage(pdfReader, i+1));
+        		}
+        		copy.freeReader(pdfReader);
+        	}
+        	resultDocument.close();
+        }
 	}
 	
+	private void renderDoc(PDFDocument doc, String uri, Map<?,?> properties,
+			OutputStream out) throws Exception {
+    	transformer.transform(new ByteArrayInputStream(doc.content.getBytes("UTF-8")), 
+    			uri, doc.options.pageSize, doc.headerFooterList,
+    			properties, out);
+	}
+
 	public void writePDF(OutputStream out, Request request, Response response) {
         try {
             renderPDF(out, request, response);

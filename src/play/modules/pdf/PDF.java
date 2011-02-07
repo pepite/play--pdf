@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.allcolor.yahp.converter.IHtmlToPdfTransformer;
@@ -39,10 +40,8 @@ import play.exceptions.PlayException;
 import play.exceptions.TemplateNotFoundException;
 import play.exceptions.UnexpectedException;
 import play.mvc.Http;
-import play.mvc.Http.Request;
 import play.mvc.Scope;
-import play.templates.Template;
-import play.templates.TemplateLoader;
+import play.mvc.Http.Request;
 import play.vfs.VirtualFile;
 
 public class PDF {
@@ -62,15 +61,43 @@ public class PDF {
         public IHtmlToPdfTransformer.PageSize pageSize = IHtmlToPdfTransformer.A4P;
     }
 
-    public static class MultiDocument {
+    public static class PDFDocument {
     	public String template;
     	public Options options;
+    	List<IHtmlToPdfTransformer.CHeaderFooter> headerFooterList = new LinkedList<IHtmlToPdfTransformer.CHeaderFooter>();
+    	String content;
 
-    	public MultiDocument(String template, Options options) {
+    	public PDFDocument(String template, Options options) {
 			this.template = template;
 			this.options = options;
 		}
+
+		public PDFDocument() {
+		}
     }
+    
+    public static class MultiPDFDocuments {
+    	public List<PDFDocument> documents = new LinkedList<PDFDocument>();
+    	public String filename;
+    	
+		public MultiPDFDocuments(String filename) {
+			this.filename = filename;
+		}
+
+		public MultiPDFDocuments() {
+			// TODO Auto-generated constructor stub
+		}
+
+		public MultiPDFDocuments add(PDFDocument singleDoc) {
+			documents.add(singleDoc);
+			return this;
+		}
+
+		public MultiPDFDocuments add(String template, Options options) {
+			documents.add(new PDFDocument(template, options));
+			return this;
+		}
+}
     
     /**
      * Render the corresponding template
@@ -105,28 +132,42 @@ public class PDF {
      * @param args the template data
      */
     public static void writePDF(OutputStream out, Object... args) {
-        String templateName = null;
         final Http.Request request = Http.Request.current();
         final String format = request.format;
 
-        Options options = null;
-        if (args.length > 0 && args[0] instanceof Options) {
-            options = (Options) args[0];
-        } else if (args.length > 1 && args[1] instanceof Options) {
-            options = (Options) args[1];
-        }
-
-        if (args.length > 0 && args[0] instanceof String && LocalvariablesNamesEnhancer.LocalVariablesNamesTracer.getAllLocalVariableNames(args[0]).isEmpty()) {
-            templateName = args[0].toString();
-        } else {
-            templateName = request.action.replace(".", "/") + "." + (format == null ? "html" : format);
-        }
-        templateName = resolveTemplateName(templateName, request, format);
+        PDFDocument singleDoc = new PDFDocument();
+        MultiPDFDocuments docs = null;
         
-        renderTemplateAsPDF(out, templateName, options, args);
+        if(args.length > 0){
+        	if (args[0] instanceof String && LocalvariablesNamesEnhancer.LocalVariablesNamesTracer.getAllLocalVariableNames(args[0]).isEmpty()) {
+        		singleDoc.template = args[0].toString();
+        	}else if(args[0] instanceof MultiPDFDocuments){
+        		docs = (MultiPDFDocuments) args[0];
+        	}
+        	if(docs == null){
+        		for(Object arg : args){
+        			if (arg instanceof Options) {
+        				singleDoc.options = (Options) arg;
+        			}
+        		}
+        	}
+        }
+        if (docs == null){
+        	docs = new MultiPDFDocuments();
+        	docs.add(singleDoc);
+        	if(singleDoc.template == null){
+        		singleDoc.template = request.action.replace(".", "/") + "." + (format == null ? "html" : format);
+        	}
+        	if(singleDoc.options != null && singleDoc.options.filename != null)
+        		docs.filename = singleDoc.options.filename;
+        	else
+        		docs.filename = FilenameUtils.getBaseName(singleDoc.template) + ".pdf";
+        }
+        
+        renderTemplateAsPDF(out, docs, args);
     }
 
-    private static String resolveTemplateName(String templateName, Request request, String format) {
+    static String resolveTemplateName(String templateName, Request request, String format) {
         if (templateName.startsWith("@")) {
             templateName = templateName.substring(1);
             if (!templateName.contains(".")) {
@@ -149,7 +190,7 @@ public class PDF {
      * @param templateName The template name
      * @param args         The template data
      */
-    public static void renderTemplateAsPDF(OutputStream out, String templateName, Options options, Object... args) {
+    public static void renderTemplateAsPDF(OutputStream out, MultiPDFDocuments docs, Object... args) {
         Scope.RenderArgs templateBinding = Scope.RenderArgs.current();
         for (Object o : args) {
             List<String> names = LocalvariablesNamesEnhancer.LocalVariablesNamesTracer.getAllLocalVariableNames(o);
@@ -167,18 +208,11 @@ public class PDF {
             throw new UnexpectedException(ex);
         }
         try {
-            Template template = TemplateLoader.load(templateName);
-        	if (options == null) {
-        		options = new Options();
-        	}
             if(out == null){
             	// we're rendering to the current Response object
-            	if (options.filename == null) {
-            		options.filename = FilenameUtils.getBaseName(templateName) + ".pdf";
-            	}
-            	throw new RenderPDFTemplate(template, templateBinding.data, options);
+            	throw new RenderPDFTemplate(docs, templateBinding.data);
             }else{
-            	RenderPDFTemplate renderer = new RenderPDFTemplate(template, templateBinding.data, options);
+            	RenderPDFTemplate renderer = new RenderPDFTemplate(docs, templateBinding.data);
             	renderer.writePDF(out, Http.Request.current(), Http.Response.current());
             }
         } catch (TemplateNotFoundException ex) {
@@ -187,7 +221,8 @@ public class PDF {
             }
             StackTraceElement element = PlayException.getInterestingStrackTraceElement(ex);
             if (element != null) {
-                throw new TemplateNotFoundException(templateName, Play.classes.getApplicationClass(element.getClassName()), element.getLineNumber());
+                throw new TemplateNotFoundException(ex.getPath(), 
+                		Play.classes.getApplicationClass(element.getClassName()), element.getLineNumber());
             } else {
                 throw ex;
             }
