@@ -7,7 +7,7 @@ h2. <a>Enable the PDF module for the application</a>
 In the **/conf/application.conf** file, enable the PDF module by adding this line:
 
 bc. # The PDF module
-module.pdf=${play.path}/modules/pdf-head
+module.pdf=${play.path}/modules/pdf
 
 h2. <a>Using the PDF module</a>
 
@@ -20,6 +20,12 @@ And then use the renderPDF() method as you would use the render() method.
 The renderPDF will first look for a .pdf template. If there are none, it will fall back to the .html template. You can use a media="print" css to customize the PDF to render. The result is a PDF file. The render method uses the same template as for rendering HTML.
 
 Please refer to the samples-and-test for an example.
+
+h3. Rendering multiple documents
+
+You can render multiple documents which will be concatenated for you. For this you must pass an instance
+of @MultiPDFDocuments@ as first argument, which contains a file name and a list of @PDFDocument@
+which each contain a template path and @Options@.
 
 h3. Passing options
 
