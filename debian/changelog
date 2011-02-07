@@ -1,3 +1,9 @@
+play-1.1-pdf-module-0.4 (0.4) maverick; urgency=low
+
+  * Add support for multiple PDF documents at a time
+
+ -- Stephane Epardaud <stephane@epardaud.fr>  Mon, 07 Feb 2011 16:23:14 +0100
+
 play-1.1-pdf-module-0.3 (0.3) maverick; urgency=low
 
   * Fixed validation that hung when the xml parser tried to get a DTD from the W3C site
