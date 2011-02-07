@@ -58,7 +58,7 @@ public class RenderPDFTemplate extends Result {
     		Request request = Http.Request.current();
         	String templateName = PDF.resolveTemplateName(doc.template, request, request.format);
             Template template = TemplateLoader.load(templateName);
-    		doc.content = template.render(args);
+    		doc.content = template.render(new HashMap<String, Object>(args));
     		loadHeaderAndFooter(doc, args);
     	}
 	}
@@ -67,15 +67,11 @@ public class RenderPDFTemplate extends Result {
     	Options options = doc.options;
     	if(!StringUtils.isEmpty(options.HEADER_TEMPLATE)){
     		Template template = TemplateLoader.load(options.HEADER_TEMPLATE);
-    		HashMap<String, Object> args2 = new HashMap<String, Object>(args);
-    		args2.remove("out");
-    		options.HEADER = template.render(args2);
+    		options.HEADER = template.render(new HashMap<String, Object>(args));
     	}
     	if(!StringUtils.isEmpty(options.FOOTER_TEMPLATE)){
     		Template template = TemplateLoader.load(options.FOOTER_TEMPLATE);
-    		HashMap<String, Object> args2 = new HashMap<String, Object>(args);
-    		args2.remove("out");
-    		options.FOOTER = template.render(args2);
+    		options.FOOTER = template.render(new HashMap<String, Object>(args));
     	}
         if (!StringUtils.isEmpty(options.HEADER))
             doc.headerFooterList.add(new IHtmlToPdfTransformer.CHeaderFooter(options.HEADER, IHtmlToPdfTransformer.CHeaderFooter.HEADER));
