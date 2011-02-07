@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.allcolor.yahp.converter.IHtmlToPdfTransformer;
+import org.allcolor.yahp.converter.IHtmlToPdfTransformer.PageSize;
 import org.apache.commons.lang.StringUtils;
 
 import play.Logger;
@@ -65,6 +66,8 @@ public class RenderPDFTemplate extends Result {
 
 	private void loadHeaderAndFooter(PDFDocument doc, Map<String, Object> args) throws TemplateNotFoundException {
     	Options options = doc.options;
+    	if(options == null)
+    		return;
     	if(!StringUtils.isEmpty(options.HEADER_TEMPLATE)){
     		Template template = TemplateLoader.load(options.HEADER_TEMPLATE);
     		options.HEADER = template.render(new HashMap<String, Object>(args));
@@ -134,8 +137,9 @@ public class RenderPDFTemplate extends Result {
 	
 	private void renderDoc(PDFDocument doc, String uri, Map<?,?> properties,
 			OutputStream out) throws Exception {
+		PageSize pageSize = doc.options != null ? doc.options.pageSize : IHtmlToPdfTransformer.A4P;
     	transformer.transform(new ByteArrayInputStream(doc.content.getBytes("UTF-8")), 
-    			uri, doc.options.pageSize, doc.headerFooterList,
+    			uri, pageSize, doc.headerFooterList,
     			properties, out);
 	}
 
