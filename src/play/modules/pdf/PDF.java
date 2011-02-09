@@ -85,7 +85,6 @@ public class PDF {
 		}
 
 		public MultiPDFDocuments() {
-			// TODO Auto-generated constructor stub
 		}
 
 		public MultiPDFDocuments add(PDFDocument singleDoc) {
@@ -105,25 +104,7 @@ public class PDF {
      * @param args The template data
      */
     public static void renderPDF(Object... args) {
-    	// stuuuuuupid typing
-    	OutputStream os = null;
-    	writePDF(os, args);
-    }
-
-    /**
-     * Render the corresponding template into a file
-     * @param file the file to render to, or null to render to the current Response object
-     * @param args the template data
-     */
-    public static void writePDF(File file, Object... args) {
-    	try {
-    		OutputStream os = new FileOutputStream(file);
-    		writePDF(os);
-    		os.flush();
-			os.close();
-		} catch (IOException e) {
-			throw new UnexpectedException(e);
-		}
+    	writePDF(null, args);
     }
     
     /**
