@@ -8,6 +8,9 @@
         <fileset dir="${play.path}/framework/lib">
                 <include name="*.jar"/>
         </fileset>
+	<fileset dir="${play.path}/framework">
+		<include name="*.jar"/>
+	</fileset>
         <fileset dir="lib">
             <include name="*.jar"/>
         </fileset>
