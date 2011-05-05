@@ -27,8 +27,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.allcolor.yahp.converter.IHtmlToPdfTransformer;
 import org.apache.commons.io.FilenameUtils;
@@ -64,12 +66,19 @@ public class PDF {
     public static class PDFDocument {
     	public String template;
     	public Options options;
+        public Map<String, Object> args = new HashMap<String, Object>();
     	List<IHtmlToPdfTransformer.CHeaderFooter> headerFooterList = new LinkedList<IHtmlToPdfTransformer.CHeaderFooter>();
     	String content;
 
-    	public PDFDocument(String template, Options options) {
+    	public PDFDocument(String template, Options options, Object... args) {
 			this.template = template;
 			this.options = options;
+            for (Object o : args) {
+                List<String> names = LocalvariablesNamesEnhancer.LocalVariablesNamesTracer.getAllLocalVariableNames(o);
+                for (String name : names) {
+                    this.args.put(name, o);
+                }
+            }
 		}
 
 		public PDFDocument() {
@@ -93,8 +102,8 @@ public class PDF {
 			return this;
 		}
 
-		public MultiPDFDocuments add(String template, Options options) {
-			documents.add(new PDFDocument(template, options));
+		public MultiPDFDocuments add(String template, Options options, Object... args) {
+			documents.add(new PDFDocument(template, options, args));
 			return this;
 		}
 }
