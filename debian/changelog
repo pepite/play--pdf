@@ -1,3 +1,12 @@
+play-1.1-pdf-module-0.6 (0.6) maverick; urgency=low
+
+  * Fixed build compiler path (#13)
+  * Added per-document remplate parameters (#16)
+  * Pass parameters to writePDF (#15)
+  * Drop xmlapi jar (#8)
+
+ -- Stephane Epardaud <stephane@epardaud.fr>  Fri, 20 May 2011 14:35:54 +0200
+
 play-1.1-pdf-module-0.5 (0.5) maverick; urgency=low
 
   * Upgraded to YaHP v1.2.20b 17/01/2011
