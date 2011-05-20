@@ -118,7 +118,7 @@ public class PDF {
     public static void writePDF(File file, Object... args) {
     	try {
     		OutputStream os = new FileOutputStream(file);
-    		writePDF(os);
+    		writePDF(os, args);
     		os.flush();
 			os.close();
 		} catch (IOException e) {
