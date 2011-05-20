@@ -27,6 +27,9 @@ You can render multiple documents which will be concatenated for you. For this y
 of @MultiPDFDocuments@ as first argument, which contains a file name and a list of @PDFDocument@
 which each contain a template path and @Options@.
 
+Each @PDFDocument@ can have its extra set of rendered parameters, in addition to those provided by the
+@renderPDF()@ call.
+
 h3. Passing options
 
 If one of your parameters to renderPDF() is an instance of PDF.Options you can specify the following options:
