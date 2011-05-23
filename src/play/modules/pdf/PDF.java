@@ -70,15 +70,24 @@ public class PDF {
     	List<IHtmlToPdfTransformer.CHeaderFooter> headerFooterList = new LinkedList<IHtmlToPdfTransformer.CHeaderFooter>();
     	String content;
 
-    	public PDFDocument(String template, Options options, Object... args) {
+    	private PDFDocument(String template, Options options){
 			this.template = template;
 			this.options = options;
+    	}
+    	
+    	public PDFDocument(String template, Options options, Object... args) {
+    		this(template, options);
             for (Object o : args) {
                 List<String> names = LocalvariablesNamesEnhancer.LocalVariablesNamesTracer.getAllLocalVariableNames(o);
                 for (String name : names) {
                     this.args.put(name, o);
                 }
             }
+		}
+
+    	public PDFDocument(String template, Options options, Map<String,Object> args) {
+    		this(template, options);
+			this.args.putAll(args);
 		}
 
 		public PDFDocument() {
@@ -106,7 +115,12 @@ public class PDF {
 			documents.add(new PDFDocument(template, options, args));
 			return this;
 		}
-}
+
+		public MultiPDFDocuments add(String template, Options options, Map<String,Object> args) {
+			documents.add(new PDFDocument(template, options, args));
+			return this;
+		}
+    }
     
     /**
      * Render the corresponding template
