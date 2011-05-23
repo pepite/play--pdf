@@ -61,7 +61,7 @@ public class RenderPDFTemplate extends Result {
             Template template = TemplateLoader.load(templateName);
             doc.args.putAll(args);
     		doc.content = template.render(new HashMap<String, Object>(doc.args));
-    		loadHeaderAndFooter(doc, args);
+    		loadHeaderAndFooter(doc, doc.args);
     	}
 	}
 
