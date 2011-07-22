@@ -1,7 +1,9 @@
+/.settings
 dist
 lib/play-pdf.jar
 samples-and-tests/pdf/tmp
 samples-and-tests/pdf/log
+build.cmd
 build.properties
 *.iws
 *.ipr
@@ -11,3 +13,4 @@ build.properties
 build-stamp
 debian/files
 debian/play-1.1-pdf-module-*
+eclipse

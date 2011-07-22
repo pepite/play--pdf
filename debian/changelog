@@ -1,3 +1,9 @@
+play-1.1-pdf-module-0.6 (0.7) maverick; urgency=low
+
+  * Added support for data uri images.
+
+ -- Stephane Thomas <sthomas@lunatech.com>  Tue, 26 Jul 2011 14:16:00 +0200
+
 play-1.1-pdf-module-0.6 (0.6) maverick; urgency=low
 
   * Fixed build compiler path (#13)

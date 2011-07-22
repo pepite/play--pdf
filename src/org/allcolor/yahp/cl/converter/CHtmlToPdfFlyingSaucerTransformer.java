@@ -40,7 +40,6 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
-import java.net.URL;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,8 +49,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.allcolor.css.parser.CCSSParser;
 import org.allcolor.xml.parser.CShaniDomParser;
 import org.allcolor.xml.parser.CXmlParser;
 import org.allcolor.xml.parser.dom.ADocument;
@@ -65,10 +62,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-import org.w3c.dom.css.CSSStyleSheet;
 import org.w3c.tidy.Tidy;
+import org.xhtmlrenderer.extend.ReplacedElementFactory;
+import org.xhtmlrenderer.layout.SharedContext;
+import org.xhtmlrenderer.pdf.ExtendedITextReplacedElementFactory;
+import org.xhtmlrenderer.pdf.ITextOutputDevice;
 import org.xhtmlrenderer.pdf.ITextRenderer;
-
 import com.itextpdf.text.pdf.BaseFont;
 
 /**
@@ -81,6 +80,22 @@ public final class CHtmlToPdfFlyingSaucerTransformer implements
 		IHtmlToPdfTransformer {
 	private static class _ITextRenderer extends ITextRenderer {
 		private final Map knownFont = new HashMap();
+		
+		
+		/**
+		 * Initializes a new renderer with extended capabilities.
+		 */
+		public _ITextRenderer() {
+			super();
+			
+			ITextOutputDevice outputDevice = getOutputDevice();
+			
+			ReplacedElementFactory replacedElementFactory = new ExtendedITextReplacedElementFactory(outputDevice);
+			
+			SharedContext sharedContext = getSharedContext();
+			
+			sharedContext.setReplacedElementFactory(replacedElementFactory);
+		}
 
 		private void addKnown(final String path) {
 			this.knownFont.put(path, path);
