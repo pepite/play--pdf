@@ -1,4 +1,4 @@
-play-1.1-pdf-module-0.6 (0.7) maverick; urgency=low
+play-1.1-pdf-module-0.6 (0.6.1) maverick; urgency=low
 
   * Added support for data uri images.
 
