@@ -1,3 +1,10 @@
+play-1.1-pdf-module-0.6 (0.6.2) maverick; urgency=low
+
+  * Added an additional check to be able to handle <img> tags without any 'src' attribute. 
+  * Refined logging and updated formatting.
+
+ -- Stephane Thomas <sthomas@lunatech.com>  Thu, 28 Jul 2011 11:09:00 +0200
+
 play-1.1-pdf-module-0.6 (0.6.1) maverick; urgency=low
 
   * Added support for data uri images.
