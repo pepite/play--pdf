@@ -46,24 +46,28 @@ public class ExtendedITextReplacedElementFactory extends ITextReplacedElementFac
 			String src = element.getAttribute("src");
 			
 			try {
-				String encoded = StringUtils.substringAfter(src, "base64,");
+				String encoded = StringUtils.substringAfter(src, ";base64,");
 				
-				byte[] decoded = Base64.decode(encoded);
-				
-				FSImage image = new ITextFSImage(Image.getInstance(decoded));
-				
-				if ((cssWidth != -1) || (cssHeight != -1)) {
-					image.scale(cssWidth, cssHeight);
+				if (!encoded.isEmpty()) {
+					byte[] decoded = Base64.decode(encoded);
+					
+					FSImage image = new ITextFSImage(Image.getInstance(decoded));
+					
+					if ((cssWidth != -1) || (cssHeight != -1)) {
+						image.scale(cssWidth, cssHeight);
+					}
+					
+					log.trace("Replaced data uri image successfully");
+					
+					return new ITextImageElement(image);
+				} else {
+					log.warn("Unable to replace data uri image because of empty data");
 				}
-				
-				log.trace("Replaced data uri image successfully");
-				
-				return new ITextImageElement(image);
 			} catch (Exception exception) {
 				log.warn("Unable to replace data uri image", exception);
-				
-				return null;
 			}
+			
+			return null;
 		} else {
 			return super.createReplacedElement(layoutContext, blockBox, userAgentCallback, cssWidth, cssHeight);
 		}
@@ -80,10 +84,13 @@ public class ExtendedITextReplacedElementFactory extends ITextReplacedElementFac
 		if (element != null) {
 			String tag = element.getNodeName();
 			
-			if (tag.equals("img")) {
+			if (tag.equalsIgnoreCase("img")) {
 				String src = element.getAttribute("src");
 				
 				if (src != null) {
+					// Prepares the source value to make sure the next comparison will be case insensitive
+					src = src.trim().toLowerCase();
+					
 					return src.startsWith("data:image/");
 				}
 			}

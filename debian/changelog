@@ -1,3 +1,9 @@
+play-1.1-pdf-module-0.6 (0.6.3) maverick; urgency=low
+
+  * Made the code in charge of detecting data uri images more robust.
+
+ -- Stephane Thomas <sthomas@lunatech.com>  Thu, 28 Jul 2011 15:02:00 +0200
+
 play-1.1-pdf-module-0.6 (0.6.2) maverick; urgency=low
 
   * Added an additional check to be able to handle <img> tags without any 'src' attribute. 
