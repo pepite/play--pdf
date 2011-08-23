@@ -75,20 +75,35 @@ public class NaiveUserAgent
     try {
         URLConnection connection =  (URLConnection)new URL(uri).openConnection();
 
-        if (Play.configuration.getProperty("play.pdf.ssl.acceptUnknowCertificate", "false").equals("true")) {
-            SSLContext ctx = SSLContext.getInstance("TLS");
-            ctx.init(new KeyManager[0], new TrustManager[] {new DefaultTrustManager()}, new SecureRandom());
-            SSLContext.setDefault(ctx);
+        if (Play.configuration.getProperty("play.pdf.ssl.acceptUnknownCertificate", "false").equals("true")) {
 
-            URLConnection.setDefaultAllowUserInteraction(false);
-
-            if (connection instanceof HttpsURLConnection) {
-                ((HttpsURLConnection)connection).setHostnameVerifier(new HostnameVerifier() {
-                    public boolean verify(java.lang.String s, javax.net.ssl.SSLSession sslSession) {
-                        return true;
-                    }
-                });
+            TrustManager[] trustAllCerts = new TrustManager[] {new X509TrustManager() {
+                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
+                public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                }
+                public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                }
             }
+            };
+
+
+            // Install the all-trusting trust manager
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+
+            // Create all-trusting host name verifier
+            HostnameVerifier allHostsValid = new HostnameVerifier() {
+                public boolean verify(String hostname, SSLSession session) {
+                    return true;
+                }
+            };
+
+            // Install the all-trusting host verifier
+            HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+
         }
         return connection.getInputStream();
     } catch (Exception e) {
