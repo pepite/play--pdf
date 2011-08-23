@@ -68,7 +68,7 @@ import org.xhtmlrenderer.layout.SharedContext;
 import org.xhtmlrenderer.pdf.ExtendedITextReplacedElementFactory;
 import org.xhtmlrenderer.pdf.ITextOutputDevice;
 import org.xhtmlrenderer.pdf.ITextRenderer;
-import com.itextpdf.text.pdf.BaseFont;
+import com.lowagie.text.pdf.BaseFont;
 
 /**
  * This class transform an html document in a PDF.

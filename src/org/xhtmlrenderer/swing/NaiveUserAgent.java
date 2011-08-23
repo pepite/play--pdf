@@ -10,10 +10,16 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Set;
 import javax.imageio.ImageIO;
+import javax.net.ssl.*;
+
 import org.xhtmlrenderer.event.DocumentListener;
 import org.xhtmlrenderer.extend.UserAgentCallback;
 import org.xhtmlrenderer.resource.CSSResource;
@@ -24,6 +30,7 @@ import org.xhtmlrenderer.util.XRLog;
 import play.Logger;
 import play.Play;
 import play.vfs.VirtualFile;
+import play.libs.*;
 
 public class NaiveUserAgent
   implements UserAgentCallback, DocumentListener
@@ -36,6 +43,7 @@ public class NaiveUserAgent
   public NaiveUserAgent()
   {
     this(16);
+
   }
 
   public NaiveUserAgent(int imgCacheSize)
@@ -65,16 +73,41 @@ public class NaiveUserAgent
     InputStream is = null;
     uri = resolveURI(uri);
     try {
-      is = new URL(uri).openStream();
-    } catch (MalformedURLException e) {
+        URLConnection connection =  (URLConnection)new URL(uri).openConnection();
+
+        if (Play.configuration.getProperty("play.pdf.ssl.acceptUnknowCertificate", "false").equals("true")) {
+            SSLContext ctx = SSLContext.getInstance("TLS");
+            ctx.init(new KeyManager[0], new TrustManager[] {new DefaultTrustManager()}, new SecureRandom());
+            SSLContext.setDefault(ctx);
+
+            URLConnection.setDefaultAllowUserInteraction(false);
+
+            if (connection instanceof HttpsURLConnection) {
+                ((HttpsURLConnection)connection).setHostnameVerifier(new HostnameVerifier() {
+                    public boolean verify(java.lang.String s, javax.net.ssl.SSLSession sslSession) {
+                        return true;
+                    }
+                });
+            }
+        }
+        return connection.getInputStream();
+    } catch (Exception e) {
       XRLog.exception("bad URL given: " + uri, e);
-    } catch (FileNotFoundException e) {
-      XRLog.exception("item at URI " + uri + " not found");
-    } catch (IOException e) {
-      XRLog.exception("IO problem for " + uri, e);
     }
     return is;
   }
+
+  private static class DefaultTrustManager implements X509TrustManager {
+
+        public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {}
+
+        public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {}
+
+        public X509Certificate[] getAcceptedIssuers() {
+            return null;
+        }
+
+    }
 
   public CSSResource getCSSResource(String uri)
   {
@@ -117,7 +150,7 @@ public class NaiveUserAgent
 
   protected ImageResource createImageResource(String uri, Image img)
   {
-    return new ImageResource(uri, AWTFSImage.createImage(img));
+    return new ImageResource(AWTFSImage.createImage(img));
   }
   public XMLResource getXMLResource(String uri) {
     InputStream inputStream = resolveAndOpenStream(uri);

@@ -7,8 +7,8 @@ import org.xhtmlrenderer.extend.ReplacedElement;
 import org.xhtmlrenderer.extend.UserAgentCallback;
 import org.xhtmlrenderer.layout.LayoutContext;
 import org.xhtmlrenderer.render.BlockBox;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.pdf.codec.Base64;
+import com.lowagie.text.Image;
+import com.lowagie.text.pdf.codec.Base64;
 
 
 

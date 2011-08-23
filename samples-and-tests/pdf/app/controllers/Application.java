@@ -64,12 +64,15 @@ public class Application extends Controller {
         return textile.split("\n")[0].substring(3).trim();
     }
 
+    public static void image(String name) throws Exception {
+        renderBinary(new File("/" + Play.frameworkPath + "/documentation/images/" + name + ".png").toURI().toURL().openStream());
+    }
+
     static String toHTML(String textile) {
         String html = new jj.play.org.eclipse.mylyn.wikitext.core.parser.MarkupParser(new jj.play.org.eclipse.mylyn.wikitext.textile.core.TextileLanguage())
                 .parseToHtml(textile);
         html = html.substring(html.indexOf("<body>") + 6, html.lastIndexOf("</body>"));
-        //html = html.replaceAll("images/", "http://www.playframework.org/documentation/1.0.3/images/");
-        html = html.replaceAll("images/([^\"]*)", "file://" + Play.frameworkPath + "/documentation/images/$1.png");
+        //html = html.replaceAll("images/([^\"]*)", "file://" + Play.frameworkPath + "/documentation/images/$1.png");
         return html;
     }
 
