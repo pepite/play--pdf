@@ -15,7 +15,7 @@
         </fileset>
     </path>
 
-    <target name="build" depends="compile">
+    <target name="build" depends="updateLibraries, compile" description="Build module">
         <copy todir="tmp/classes">
             <fileset dir="src">
                 <include name="**/*.properties" />
@@ -41,7 +41,40 @@
         </javac>
     </target>
 
-    <target name="clean">
+    <!-- Checks whether the module libraries contain some classes that have been overridden in the module itself -->
+    <target name="checkLibraries">
+        <condition property="update.libraries">
+            <and>
+                <available classname="org.allcolor.yahp.cl.converter.CHtmlToPdfFlyingSaucerTransformer">
+                    <classpath>
+                        <pathelement location="lib/yahp-internal.jar" />
+                        <pathelement location="lib/yahp.jar" />
+                    </classpath>
+                </available>
+                <available classname="org.xhtmlrenderer.swing.NaiveUserAgent">
+                    <classpath>
+                        <pathelement location="lib/core-renderer-yahp.jar" />
+                    </classpath>
+                </available>
+            </and>
+        </condition>
+    </target>
+
+    <!-- Removes overridden classes from libraries to make sure only the right version is available in the classpath -->
+    <target name="updateLibraries" depends="checkLibraries" if="update.libraries">
+        <echo>Removing overridden classes from libraries</echo>
+        <!-- Uses the 'zip' task instead of the 'jar' task to make sure the manifest is not modified at all-->
+        <zip destfile="lib/core-renderer-yahp.temp.jar">
+            <zipfileset src="lib/core-renderer-yahp.jar" excludes="org/xhtmlrenderer/swing/NaiveUserAgent.*" />
+        </zip>
+        <zip destfile="lib/yahp-internal.temp.jar">
+            <zipfileset src="lib/yahp-internal.jar" excludes="org/allcolor/yahp/cl/converter/CHtmlToPdfFlyingSaucerTransformer*.*" />
+        </zip>
+        <move file="lib/core-renderer-yahp.temp.jar" tofile="lib/core-renderer-yahp.jar" />
+        <move file="lib/yahp-internal.temp.jar" tofile="lib/yahp-internal.jar" />
+    </target>
+
+    <target name="clean" description="Remove all temporary files">
         <delete dir="tmp" />
     </target>
 </project>
