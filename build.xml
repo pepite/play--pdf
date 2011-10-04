@@ -44,11 +44,11 @@
     <!-- Checks whether the module libraries contain some classes that have been overridden in the module itself -->
     <target name="checkLibraries">
         <condition property="update.libraries">
-            <and>
+            <or>
                 <available classname="org.allcolor.yahp.cl.converter.CHtmlToPdfFlyingSaucerTransformer">
                     <classpath>
-                        <pathelement location="lib/yahp-internal.jar" />
                         <pathelement location="lib/yahp.jar" />
+                        <pathelement location="lib/yahp-internal.jar" />
                     </classpath>
                 </available>
                 <available classname="org.xhtmlrenderer.swing.NaiveUserAgent">
@@ -56,7 +56,7 @@
                         <pathelement location="lib/core-renderer-yahp.jar" />
                     </classpath>
                 </available>
-            </and>
+            </or>
         </condition>
     </target>
 
