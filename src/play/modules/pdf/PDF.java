@@ -27,6 +27,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -79,9 +81,12 @@ public class PDF {
     		this(template, options);
     		try {
     			// play <= v1.2.3
-	    		Class.forName("play.classloading.enhancers.LocalvariablesNamesEnhancer");
+	    		Class<?> clazz = Class.forName(
+	    				"play.classloading.enhancers.LocalvariablesNamesEnhancer.LocalVariablesNamesTracer");
+	    		Method method = clazz.getMethod("getAllLocalVariableNames", Object.class);
 	    		for (Object o : args) {
-	                List<String> names = play.classloading.enhancers.LocalvariablesNamesEnhancer.LocalVariablesNamesTracer.getAllLocalVariableNames(o);
+	    			
+	                List<String> names = (List<String>) method.invoke(null, o);
 	                for (String name : names) {
 	                    this.args.put(name, o);
 	                }
@@ -94,7 +99,9 @@ public class PDF {
 	            for(int i = 0; i < args.length; i++) {
 	                this.args.put(names[i], args[i]);
 	            }
-    		}
+    		} catch (Exception e) {
+				throw new UnexpectedException(e);
+			}
 		}
 
     	public PDFDocument(String template, Options options, Map<String,Object> args) {
@@ -177,12 +184,16 @@ public class PDF {
         	boolean firstEmpty = false;
         	try {
         		// play <= v1.2.3
-	    		Class.forName("play.classloading.enhancers.LocalvariablesNamesEnhancer");
-	    		firstEmpty = play.classloading.enhancers.LocalvariablesNamesEnhancer.LocalVariablesNamesTracer.getAllLocalVariableNames(args[0]).isEmpty();
+	    		Class<?> clazz = Class.forName(
+	    				"play.classloading.enhancers.LocalvariablesNamesEnhancer.LocalVariablesNamesTracer");
+	    		Method method = clazz.getMethod("getAllLocalVariableNames", Object.class);
+	    		firstEmpty = ( (List<String>) method.invoke(null, args[0])).isEmpty();
         	} catch ( ClassNotFoundException e ) {
         		// play <= v1.2.3
         		firstEmpty = LVEnhancerRuntime.getParamNames().varargs[0].isEmpty();
-        	}
+        	} catch (Exception e) {
+				throw new UnexpectedException(e);
+			}
         	
         	if (args[0] instanceof String && firstEmpty ) {
         		singleDoc.template = args[0].toString();
@@ -240,9 +251,11 @@ public class PDF {
         
         try {
     		// play <= v1.2.3
-    		Class.forName("play.classloading.enhancers.LocalvariablesNamesEnhancer");
+        	Class<?> clazz = Class.forName(
+			"play.classloading.enhancers.LocalvariablesNamesEnhancer.LocalVariablesNamesTracer");
+        	Method method = clazz.getMethod("getAllLocalVariableNames", Object.class);
     		for (Object o : args) {
-                List<String> names = play.classloading.enhancers.LocalvariablesNamesEnhancer.LocalVariablesNamesTracer.getAllLocalVariableNames(o);
+                List<String> names = (List<String>) method.invoke(null, o);
                 for (String name : names) {
                     templateBinding.put(name, o);
                 }
@@ -255,9 +268,9 @@ public class PDF {
             for(int i = 0; i < args.length; i++) {
                 templateBinding.put(names[i], args[i]);
             }
-    	}
-        
-        
+    	} catch (Exception e) {
+			throw new UnexpectedException(e);
+		}
         
         templateBinding.put("session", Scope.Session.current());
         templateBinding.put("request", Http.Request.current());
@@ -291,3 +304,4 @@ public class PDF {
     }
 
 }
+
