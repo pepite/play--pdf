@@ -1,11 +1,11 @@
-Source: play-1.1-pdf-module-0.6
+Source: play-1.2-pdf-module-0.8
 Section: unknown
 Priority: extra
 Maintainer: Stephane Epardaud <stephane@epardaud.fr>
-Build-Depends: debhelper (>= 7), play-1.1
+Build-Depends: debhelper (>= 7), play-1.2
 Standards-Version: 3.8.3
 
-Package: play-1.1-pdf-module-0.6
+Package: play-1.2-pdf-module-0.8
 Architecture: all
 Depends: ${misc:Depends}
 Conflicts: play-1.1-unstable-r1003 (<< 1.1-unstable-r1003-1ubuntu4)
