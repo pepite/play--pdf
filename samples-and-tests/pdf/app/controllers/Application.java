@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import jj.play.org.eclipse.mylyn.wikitext.core.parser.MarkupParser;
+import jj.play.org.eclipse.mylyn.wikitext.textile.core.TextileLanguage;
 import play.Play;
 import play.libs.IO;
 import play.modules.pdf.PDF.Options;
@@ -50,11 +52,10 @@ public class Application extends Controller {
       return "";
     }
     
-    String textile = IO.readContentAsString(page);
-    return textile;
+    return IO.readContentAsString(page);
   }
   
-  static String getTitle(String textile) {
+  private static String getTitle(String textile) {
     if (textile.length() == 0) {
       return "";
     }
@@ -66,10 +67,10 @@ public class Application extends Controller {
     renderBinary(new File("/" + Play.frameworkPath + "/documentation/images/" + name + ".png").toURI().toURL().openStream());
   }
   
-  static String toHTML(String textile) {
-    String html = new jj.play.org.eclipse.mylyn.wikitext.core.parser.MarkupParser(new jj.play.org.eclipse.mylyn.wikitext.textile.core.TextileLanguage()).parseToHtml(textile);
-    html = html.substring(html.indexOf("<body>") + 6, html.lastIndexOf("</body>"));
+  private static String toHTML(String textile) {
+    String html = new MarkupParser(new TextileLanguage()).parseToHtml(textile);
+    
     // html = html.replaceAll("images/([^\"]*)", "file://" + Play.frameworkPath + "/documentation/images/$1.png");
-    return html;
+    return html.substring(html.indexOf("<body>") + 6, html.lastIndexOf("</body>"));
   }
 }
