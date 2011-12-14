@@ -1,5 +1,5 @@
 #{extends 'main.html' /}
-#{set title:'PDF Module Application Sample' /}
+#{set title:'PDF Module Sample Application' /}
 #{set 'moreStyles' }
         <link rel="stylesheet" media="screen" href="/public/playmanual/manual.css">
         <link rel="stylesheet" media="screen" href="/public/playmanual/wiki.css">
@@ -12,12 +12,13 @@
             </div>
             <div id="pageContent">
                 <div class="wikistyle">
-                    <h1>Welcome on the PDF module application sample!</h1>
-                    <p>This application sample will give you a rough idea of what you can achieve with this Play! module.</p>
+                    <h1>Welcome on the PDF module sample application!</h1>
+                    <p>This sample application will give you a rough idea of what you can achieve with this Play! module.</p>
                     <h2>Examples</h2>
                     <p>Select an action to perform:</p>
                     <ul>
-                        <li><a href="@{generate()}">Print the whole Play! manual as a PDF document</a></li>
+                        <li>Print the <a href="@{generate("install")}">installation section</a> (~3 pages) of the Play! manual as a PDF document</li>
+                        <li>Print the whole <a href="@{generate("home")}">Play! manual</a> as a PDF document</li>
                     </ul>
                 </div>
             </div>

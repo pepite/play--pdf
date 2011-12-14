@@ -4,8 +4,9 @@
 
 # Home page
 GET     /                                       Application.index
-GET     /generate                               Application.generate
-GET     /images/{name}                          Application.image
+GET     /generate                               Application.generate(id:'home')
+GET     /generate/{id}                          Application.generate
+GET     /images/{id}                            Application.image
 
 # Ignore favicon requests
 GET     /favicon.ico                            404
