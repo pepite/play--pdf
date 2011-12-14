@@ -14,6 +14,10 @@ import play.mvc.Controller;
 
 
 public class Application extends Controller {
+  public static void image(String name) throws Exception {
+    renderBinary(new File("/" + Play.frameworkPath + "/documentation/images/" + name + ".png").toURI().toURL().openStream());
+  }
+  
   public static void index() throws Exception {
     // Load the textile markup for the home page.
     String id = "home";
@@ -61,10 +65,6 @@ public class Application extends Controller {
     }
     
     return textile.split("\n")[0].substring(3).trim();
-  }
-  
-  public static void image(String name) throws Exception {
-    renderBinary(new File("/" + Play.frameworkPath + "/documentation/images/" + name + ".png").toURI().toURL().openStream());
   }
   
   private static String toHTML(String textile) {
