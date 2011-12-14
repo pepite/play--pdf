@@ -1,17 +1,24 @@
-<html>
-    <head>
-        <title>Play manual - ${title}</title>
-        <link rel="stylesheet" href="@{'/public/stylesheets/main.css'}" type="text/css" charset="utf-8">
-    </head>
-    <body>
-        <div id="main">
-            <div id="body">
-                <div id="page">
-
-                    ${html.raw()}
-
+#{extends 'main.html' /}
+#{set title:'PDF Module Application Sample' /}
+#{set 'moreStyles' }
+        <link rel="stylesheet" media="screen" href="/public/playmanual/manual.css">
+        <link rel="stylesheet" media="screen" href="/public/playmanual/wiki.css">
+#{/set}
+        <div class="wrapper">
+            <div id="docSidebar">
+                <div id="logo">
+                    <img src="/public/playmanual/logo.png" alt="Play! logo">       
+                </div>
+            </div>
+            <div id="pageContent">
+                <div class="wikistyle">
+                    <h1>Welcome on the PDF module application sample!</h1>
+                    <p>This application sample will give you a rough idea of what you can achieve with this Play! module.</p>
+                    <h2>Examples</h2>
+                    <p>Select an action to perform:</p>
+                    <ul>
+                        <li><a href="@{generate()}">Print the whole Play! manual as a PDF document</a></li>
+                    </ul>
                 </div>
             </div>
         </div>
-    </body>
-</html>

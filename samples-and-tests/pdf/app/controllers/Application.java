@@ -6,6 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import jj.play.org.eclipse.mylyn.wikitext.core.parser.MarkupParser;
 import jj.play.org.eclipse.mylyn.wikitext.textile.core.TextileLanguage;
+import play.Logger;
 import play.Play;
 import play.libs.IO;
 import play.modules.pdf.PDF.Options;
@@ -18,7 +19,13 @@ public class Application extends Controller {
     renderBinary(new File("/" + Play.frameworkPath + "/documentation/images/" + name + ".png").toURI().toURL().openStream());
   }
   
-  public static void index() throws Exception {
+  public static void index() {
+    render();
+  }
+  
+  public static void generate() throws Exception {
+    Logger.info("Starting generation of documentation");
+    
     // Load the textile markup for the home page.
     String id = "home";
     String textile = getTextile(id);

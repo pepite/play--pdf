@@ -4,6 +4,7 @@
 
 # Home page
 GET     /                                       Application.index
+GET     /generate                               Application.generate
 GET     /images/{name}                          Application.image
 
 # Ignore favicon requests
