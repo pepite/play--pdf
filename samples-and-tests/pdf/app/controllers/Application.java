@@ -140,8 +140,6 @@ public class Application extends Controller {
       Logger.debug("Loaded documentation section '%s' in '%s' successfully", id, file.getAbsolutePath());
     } else {
       Logger.error("Unable to load documentation section '%s' in '%s'", id, file.getAbsolutePath());
-      
-      notFound("Unable to load documentation section '" + id + "'");
     }
     
     return textile;
@@ -170,6 +168,8 @@ public class Application extends Controller {
       watch.stop();
       
       Logger.info("Generated documentation as PDF successfully in %s", DurationFormatUtils.formatDurationWords(watch.getTime(), true, true));
+      
+      watch = null;
     } else {
       Logger.info("Generated documentation as HTML successfully");
     }
