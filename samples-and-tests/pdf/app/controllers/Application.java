@@ -24,6 +24,14 @@ import play.mvc.Finally;
  * 
  *   play run -Dxr.util-logging.loggingEnabled=true
  * 
+ * The PDF module help is available in the 'Installed modules' section in the sidebar on:
+ * 
+ *   http://localhost:9000/@documentation/home
+ * 
+ * Or directly at:
+ * 
+ *   http://localhost:9000/@documentation/modules/pdf/home
+ * 
  */
 public class Application extends Controller {
   private static StopWatch watch;
@@ -119,19 +127,21 @@ public class Application extends Controller {
    * @throws IOException in case of error
    */
   private static String getTextile(String id) throws IOException {
+    String textile = "";
+    
     File file = new File(Play.frameworkPath + "/documentation/manual/" + id + ".textile");
     
     if (file.exists()) {
-      Logger.debug("Loading documentation section '%s' in '%s'", id, file.getAbsolutePath());
+      textile = IO.readContentAsString(file);
       
-      return IO.readContentAsString(file);
+      Logger.debug("Loaded documentation section '%s' in '%s' successfully", id, file.getAbsolutePath());
     } else {
-      Logger.debug("Unable to load documentation section '%s' in '%s'", id, file.getAbsolutePath());
+      Logger.error("Unable to load documentation section '%s' in '%s'", id, file.getAbsolutePath());
       
       notFound("Unable to load documentation section '" + id + "'");
-      
-      return "";
     }
+    
+    return textile;
   }
   
   /**
