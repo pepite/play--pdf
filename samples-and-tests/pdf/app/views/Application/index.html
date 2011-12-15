@@ -10,21 +10,29 @@
                     <img src="/public/playmanual/logo.png" alt="Play! logo">
                     <h2 id="version">Play ${play.version}</h2>
                 </div>
+                #{if play.mode.isDev()}
                 <h2>Browse</h2>
                 <ul>
                     <li><a href="/@documentation">Documentation home</a></li>
                     <li><a href="/@documentation/modules/pdf/home">Pdf</a></li>
                 </ul>
+                #{/if}
             </div>
             <div id="pageContent">
                 <div class="wikistyle">
                     <h1>Welcome on the PDF module sample application!</h1>
-                    <p>This sample application will give you a rough idea of what you can achieve with this Play! module.</p>
+                    <p>This application will give you a rough idea of what you can achieve with this <a href="http://www.playframework.org/">Play!</a> module:</p>
+                    <h2>Note</h2>
+                    <p>You must configure this application to run in <code>${play.mode.DEV}</code> mode in the <code>application.conf</code> file to be able to access documentation from this page in the sidebar:</p>
+<pre>
+application.mode = dev
+</pre>
                     <h2>Examples</h2>
                     <p>Select an action to perform:</p>
                     <ul>
                         <li>Print the <a href="@{generate("install")}">installation section</a> (~3 pages) of the Play! manual as a PDF document</li>
                         <li>Print the whole <a href="@{generate("home")}">Play! manual</a> as a PDF document</li>
+                        <li>Output the whole <a href="@{generate("home", true)}">Play! manual</a> as a single HTML page (for debugging purpose)</li>
                     </ul>
                 </div>
             </div>
