@@ -10,12 +10,30 @@ import play.test.UnitTest;
 
 public class BasicTest extends UnitTest {
   /**
-   * Tests the loading of an image.
+   * Tests the loading of an image from the application public folder.
    * 
    * @throws IOException in case of error
    */
   @Test
-  public void testLoadingOfImage() throws IOException {
+  public void testLoadingOfApplicationImage() throws IOException {
+    String uri = getAbsoluteUrl("/public/images/favicon.png");
+    
+    Logger.debug("Testing loading of image at '%s'", uri);
+    
+    URL url = new URL(uri);
+    URLConnection connection = url.openConnection();
+    
+    assertTrue(connection.getContentLength() > 0);
+    assertEquals("image/png", connection.getContentType());
+  }
+  
+  /**
+   * Tests the loading of an image from the Play! documentation and returned by the application.
+   * 
+   * @throws IOException in case of error
+   */
+  @Test
+  public void testLoadingOfDocumentationImage() throws IOException {
     String uri = getAbsoluteUrl("/images/help");
     
     Logger.debug("Testing loading of image at '%s'", uri);
@@ -23,12 +41,26 @@ public class BasicTest extends UnitTest {
     URL url = new URL(uri);
     URLConnection connection = url.openConnection();
     
-    // Decreases timeout as this local call should be quick to resolve (so we don't have to wait one minute before the 
-    // test fails)
-    connection.setReadTimeout(5000);
+    assertTrue(connection.getContentLength() > 0);
+    assertEquals("image/png", connection.getContentType());
+  }
+  
+  /**
+   * Tests the loading of an image available on Internet.
+   * 
+   * @throws IOException in case of error
+   */
+  @Test
+  public void testLoadingOfInternetImage() throws IOException {
+    String uri = "http://www.google.fr/images/srpr/logo3w.png";
+    
+    Logger.debug("Testing loading of image at '%s'", uri);
+    
+    URL url = new URL(uri);
+    URLConnection connection = url.openConnection();
     
     assertTrue(connection.getContentLength() > 0);
-    assertSame("image/png", connection.getContentType());
+    assertEquals("image/png", connection.getContentType());
   }
   
   /**
