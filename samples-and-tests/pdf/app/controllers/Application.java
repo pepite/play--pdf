@@ -3,6 +3,7 @@ import static play.modules.pdf.PDF.renderPDF;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import jj.play.org.eclipse.mylyn.wikitext.core.parser.MarkupParser;
@@ -67,7 +68,9 @@ public class Application extends Controller {
    * Displays the welcome page.
    */
   public static void index() {
-    render();
+    Set<String> modules = Play.modules.keySet();
+    
+    render(modules);
   }
   
   /**
