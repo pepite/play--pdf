@@ -115,8 +115,8 @@ public class Application extends Controller {
       watch.start();
       
       Options options = new Options();
-      options.FOOTER = "<span style='font-size: 8pt;font-style:italic;color: #666;'>Generated with Play! Framework PDF Module.</span><span style=\" color: rgb(141, 172, 38);float: right;font-size: 8pt;\">Page <pagenumber>/<pagecount></span>";
-      options.filename = "sample.pdf";
+      options.FOOTER = "<span style='font-size: 8pt;font-style:italic;color: #666;'>Generated with Play! Framework PDF Module</span><span style=\" color: rgb(141, 172, 38);float: right;font-size: 8pt;\">Page <pagenumber>/<pagecount></span>";
+      options.filename = id + ".pdf";
       
       renderPDF(content, options, title);
     }
