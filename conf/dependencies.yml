@@ -1,0 +1,4 @@
+self: play -> pdf 0.8
+
+require:
+    - play
