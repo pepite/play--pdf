@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Embedding a PDF file as an image</title>
+        <link rel="stylesheet" href="@{'/public/stylesheets/generate.css'}" type="text/css" charset="utf-8">
+    </head>
+    <body>
+        <img src="/public/images/logo.png" alt="Play! logo">
+        <div id="content">
+          <p>The image below is an embedded PDF file</p>
+          <img src="/public/embedded.pdf" width="50%" style="xdisplay: block; xwidth: 7cm; xheight: 7cm; border: 1px dotted black"/>
+        </div>
+    </body>
+</html>
