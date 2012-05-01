@@ -59,7 +59,7 @@ public class PDF {
         public String ALL_PAGES = null;
         public String EVEN_PAGES = null;
         public String ODD_PAGES = null;
-        
+
         public String filename = null;
 
         public IHtmlToPdfTransformer.PageSize pageSize = IHtmlToPdfTransformer.A4P;
@@ -76,7 +76,7 @@ public class PDF {
 			this.template = template;
 			this.options = options;
     	}
-    	
+
     	public PDFDocument(String template, Options options, Object... args) {
     		this(template, options);
     		try {
@@ -112,11 +112,11 @@ public class PDF {
 		public PDFDocument() {
 		}
     }
-    
+
     public static class MultiPDFDocuments {
     	public List<PDFDocument> documents = new LinkedList<PDFDocument>();
     	public String filename;
-    	
+
 		public MultiPDFDocuments(String filename) {
 			this.filename = filename;
 		}
@@ -140,7 +140,7 @@ public class PDF {
 			return this;
 		}
     }
-    
+
     /**
      * Render the corresponding template
      *
@@ -167,7 +167,7 @@ public class PDF {
 			throw new UnexpectedException(e);
 		}
     }
-    
+
     /**
      * Render the corresponding template into a file
      * @param out the stream to render to, or null to render to the current Response object
@@ -179,7 +179,7 @@ public class PDF {
 
         PDFDocument singleDoc = new PDFDocument();
         MultiPDFDocuments docs = null;
-        
+
         if(args.length > 0){
         	boolean firstEmpty = false;
         	try {
@@ -219,7 +219,7 @@ public class PDF {
         	else
         		docs.filename = FilenameUtils.getBaseName(singleDoc.template) + ".pdf";
         }
-        
+
         renderTemplateAsPDF(out, docs, args);
     }
 
@@ -231,8 +231,18 @@ public class PDF {
             }
             templateName = templateName.replace(".", "/") + "." + (format == null ? "html" : format);
         }
-        VirtualFile template = Play.getVirtualFile(templateName);
-        if (template == null || !template.exists()) {
+        Boolean templateExists = false;
+        for (VirtualFile vf : Play.templatesPath) {
+            if (vf == null) {
+                continue;
+            }
+            VirtualFile tf = vf.child(templateName);
+            if (tf.exists()) {
+                templateExists = true;
+                break;
+            }
+        }
+        if (!templateExists) {
             if (templateName.lastIndexOf("." + format) != -1) {
             	templateName = templateName.substring(0, templateName.lastIndexOf("." + format)) + ".html";
             }
@@ -295,7 +305,7 @@ public class PDF {
             }
             StackTraceElement element = PlayException.getInterestingStrackTraceElement(ex);
             if (element != null) {
-                throw new TemplateNotFoundException(ex.getPath(), 
+                throw new TemplateNotFoundException(ex.getPath(),
                 		Play.classes.getApplicationClass(element.getClassName()), element.getLineNumber());
             } else {
                 throw ex;
