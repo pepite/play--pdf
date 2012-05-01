@@ -27,6 +27,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,7 +38,7 @@ import org.allcolor.yahp.converter.IHtmlToPdfTransformer;
 import org.apache.commons.io.FilenameUtils;
 
 import play.Play;
-import play.classloading.enhancers.LocalvariablesNamesEnhancer;
+import play.classloading.enhancers.LVEnhancer.LVEnhancerRuntime;
 import play.data.validation.Validation;
 import play.exceptions.PlayException;
 import play.exceptions.TemplateNotFoundException;
@@ -77,12 +79,29 @@ public class PDF {
     	
     	public PDFDocument(String template, Options options, Object... args) {
     		this(template, options);
-            for (Object o : args) {
-                List<String> names = LocalvariablesNamesEnhancer.LocalVariablesNamesTracer.getAllLocalVariableNames(o);
-                for (String name : names) {
-                    this.args.put(name, o);
-                }
-            }
+    		try {
+    			// play <= v1.2.3
+	    		Class<?> clazz = Class.forName(
+	    				"play.classloading.enhancers.LocalvariablesNamesEnhancer.LocalVariablesNamesTracer");
+	    		Method method = clazz.getMethod("getAllLocalVariableNames", Object.class);
+	    		for (Object o : args) {
+	    			
+	                List<String> names = (List<String>) method.invoke(null, o);
+	                for (String name : names) {
+	                    this.args.put(name, o);
+	                }
+	            }
+    		} catch ( ClassNotFoundException e ) {
+    			// play > v1.2.3
+	            String[] names = LVEnhancerRuntime.getParamNames().varargs;
+	            if(args != null && args.length > 0 && names == null)
+	                throw new UnexpectedException("no varargs names while args.length > 0 !");
+	            for(int i = 0; i < args.length; i++) {
+	                this.args.put(names[i], args[i]);
+	            }
+    		} catch (Exception e) {
+				throw new UnexpectedException(e);
+			}
 		}
 
     	public PDFDocument(String template, Options options, Map<String,Object> args) {
@@ -162,7 +181,21 @@ public class PDF {
         MultiPDFDocuments docs = null;
         
         if(args.length > 0){
-        	if (args[0] instanceof String && LocalvariablesNamesEnhancer.LocalVariablesNamesTracer.getAllLocalVariableNames(args[0]).isEmpty()) {
+        	boolean firstEmpty = false;
+        	try {
+        		// play <= v1.2.3
+	    		Class<?> clazz = Class.forName(
+	    				"play.classloading.enhancers.LocalvariablesNamesEnhancer.LocalVariablesNamesTracer");
+	    		Method method = clazz.getMethod("getAllLocalVariableNames", Object.class);
+	    		firstEmpty = ( (List<String>) method.invoke(null, args[0])).isEmpty();
+        	} catch ( ClassNotFoundException e ) {
+        		// play <= v1.2.3
+        		firstEmpty = LVEnhancerRuntime.getParamNames().varargs[0].isEmpty();
+        	} catch (Exception e) {
+				throw new UnexpectedException(e);
+			}
+        	
+        	if (args[0] instanceof String && firstEmpty ) {
         		singleDoc.template = args[0].toString();
         	}else if(args[0] instanceof MultiPDFDocuments){
         		docs = (MultiPDFDocuments) args[0];
@@ -215,12 +248,30 @@ public class PDF {
      */
     public static void renderTemplateAsPDF(OutputStream out, MultiPDFDocuments docs, Object... args) {
         Scope.RenderArgs templateBinding = Scope.RenderArgs.current();
-        for (Object o : args) {
-            List<String> names = LocalvariablesNamesEnhancer.LocalVariablesNamesTracer.getAllLocalVariableNames(o);
-            for (String name : names) {
-                templateBinding.put(name, o);
+        
+        try {
+    		// play <= v1.2.3
+        	Class<?> clazz = Class.forName(
+			"play.classloading.enhancers.LocalvariablesNamesEnhancer.LocalVariablesNamesTracer");
+        	Method method = clazz.getMethod("getAllLocalVariableNames", Object.class);
+    		for (Object o : args) {
+                List<String> names = (List<String>) method.invoke(null, o);
+                for (String name : names) {
+                    templateBinding.put(name, o);
+                }
             }
-        }
+    	} catch ( ClassNotFoundException e ) {
+    		// play <= v1.2.3
+    		String[] names = LVEnhancerRuntime.getParamNames().varargs;
+            if(args != null && args.length > 0 && names == null)
+                throw new UnexpectedException("no varargs names while args.length > 0 !");
+            for(int i = 0; i < args.length; i++) {
+                templateBinding.put(names[i], args[i]);
+            }
+    	} catch (Exception e) {
+			throw new UnexpectedException(e);
+		}
+        
         templateBinding.put("session", Scope.Session.current());
         templateBinding.put("request", Http.Request.current());
         templateBinding.put("flash", Scope.Flash.current());
@@ -253,3 +304,4 @@ public class PDF {
     }
 
 }
+
