@@ -51,6 +51,11 @@
                         <pathelement location="lib/yahp-internal.jar" />
                     </classpath>
                 </available>
+                <available classname="org.xhtmlrenderer.pdf.ITextUserAgent">
+                    <classpath>
+                        <pathelement location="lib/core-renderer.jar" />
+                    </classpath>
+                </available>
                 <available classname="org.xhtmlrenderer.swing.NaiveUserAgent">
                     <classpath>
                         <pathelement location="lib/core-renderer.jar" />
@@ -65,7 +70,7 @@
         <echo>Removing overridden classes from libraries</echo>
         <!-- Uses the 'zip' task instead of the 'jar' task to make sure the manifest is not modified at all-->
         <zip destfile="lib/core-renderer.temp.jar">
-            <zipfileset src="lib/core-renderer.jar" excludes="org/xhtmlrenderer/swing/NaiveUserAgent.*" />
+            <zipfileset src="lib/core-renderer.jar" excludes="org/xhtmlrenderer/swing/NaiveUserAgent.*,org/xhtmlrenderer/pdf/ITextUserAgent.*" />
         </zip>
         <zip destfile="lib/yahp-internal.temp.jar">
             <zipfileset src="lib/yahp-internal.jar" excludes="org/allcolor/yahp/cl/converter/CHtmlToPdfFlyingSaucerTransformer*.*" />
