@@ -27,8 +27,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,14 +36,14 @@ import org.allcolor.yahp.converter.IHtmlToPdfTransformer;
 import org.apache.commons.io.FilenameUtils;
 
 import play.Play;
-import play.classloading.enhancers.LVEnhancer.LVEnhancerRuntime;
 import play.data.validation.Validation;
 import play.exceptions.PlayException;
 import play.exceptions.TemplateNotFoundException;
 import play.exceptions.UnexpectedException;
+import play.modules.pdf.helpers.PdfBinderHelper;
 import play.mvc.Http;
-import play.mvc.Scope;
 import play.mvc.Http.Request;
+import play.mvc.Scope;
 import play.vfs.VirtualFile;
 
 public class PDF {
@@ -66,112 +64,122 @@ public class PDF {
     }
 
     public static class PDFDocument {
-    	public String template;
-    	public Options options;
+        public String template;
+        public Options options;
         public Map<String, Object> args = new HashMap<String, Object>();
-    	List<IHtmlToPdfTransformer.CHeaderFooter> headerFooterList = new LinkedList<IHtmlToPdfTransformer.CHeaderFooter>();
-    	String content;
+        List<IHtmlToPdfTransformer.CHeaderFooter> headerFooterList = new LinkedList<IHtmlToPdfTransformer.CHeaderFooter>();
+        String content;
 
-    	private PDFDocument(String template, Options options){
-			this.template = template;
-			this.options = options;
-    	}
+        private PDFDocument(String template, Options options) {
+            this.template = template;
+            this.options = options;
+        }
 
-    	public PDFDocument(String template, Options options, Object... args) {
-    		this(template, options);
-    		try {
-    			// play <= v1.2.3
-	    		Class<?> clazz = Class.forName(
-	    				"play.classloading.enhancers.LocalvariablesNamesEnhancer.LocalVariablesNamesTracer");
-	    		Method method = clazz.getMethod("getAllLocalVariableNames", Object.class);
-	    		for (Object o : args) {
-	    			
-	                List<String> names = (List<String>) method.invoke(null, o);
-	                for (String name : names) {
-	                    this.args.put(name, o);
-	                }
-	            }
-    		} catch ( ClassNotFoundException e ) {
-    			// play > v1.2.3
-	            String[] names = LVEnhancerRuntime.getParamNames().varargs;
-	            if(args != null && args.length > 0 && names == null)
-	                throw new UnexpectedException("no varargs names while args.length > 0 !");
-	            for(int i = 0; i < args.length; i++) {
-	                this.args.put(names[i], args[i]);
-	            }
-    		} catch (Exception e) {
-				throw new UnexpectedException(e);
-			}
-		}
+        public PDFDocument(String template, Options options, Object... args) {
+            this(template, options);
 
-    	public PDFDocument(String template, Options options, Map<String,Object> args) {
-    		this(template, options);
-			this.args.putAll(args);
-		}
+            PdfBinderHelper binderHelper = new PdfBinderHelper();
+            switch (binderHelper.binderType) {
+            case LOCAL_VARIABLE:
+                for (Object o : args) {
+                    List<String> names = (List<String>) binderHelper.getVariableNames(o);
+                    if (names != null) {
+                        for (String name : names) {
+                            this.args.put(name, o);
+                        }
+                    }
+                }
+                break;
+            case LVENHANCER:
+                String[] names = (String[]) binderHelper.getVariableNames();
 
-		public PDFDocument() {
-		}
+                if (args != null && args.length > 0 && names == null)
+                    throw new UnexpectedException("no varargs names while args.length > 0 !");
+                for (int i = 0; i < args.length; i++) {
+                    this.args.put(names[i], args[i]);
+                }
+                break;
+            }
+        }
+
+        public PDFDocument(String template, Options options, Map<String, Object> args) {
+            this(template, options);
+            this.args.putAll(args);
+        }
+
+        public PDFDocument() {
+            // Detect the Binder of play that we need to use
+        }
     }
 
     public static class MultiPDFDocuments {
-    	public List<PDFDocument> documents = new LinkedList<PDFDocument>();
-    	public String filename;
+        public List<PDFDocument> documents = new LinkedList<PDFDocument>();
+        public String filename;
 
-		public MultiPDFDocuments(String filename) {
-			this.filename = filename;
-		}
+        public MultiPDFDocuments(String filename) {
+            this.filename = filename;
+        }
 
-		public MultiPDFDocuments() {
-			// TODO Auto-generated constructor stub
-		}
+        public MultiPDFDocuments() {
+            // TODO Auto-generated constructor stub
+        }
 
-		public MultiPDFDocuments add(PDFDocument singleDoc) {
-			documents.add(singleDoc);
-			return this;
-		}
+        public MultiPDFDocuments add(PDFDocument singleDoc) {
+            documents.add(singleDoc);
+            return this;
+        }
 
-		public MultiPDFDocuments add(String template, Options options, Object... args) {
-			documents.add(new PDFDocument(template, options, args));
-			return this;
-		}
+        public MultiPDFDocuments add(String template, Options options, Object... args) {
+            documents.add(new PDFDocument(template, options, args));
+            return this;
+        }
 
-		public MultiPDFDocuments add(String template, Options options, Map<String,Object> args) {
-			documents.add(new PDFDocument(template, options, args));
-			return this;
-		}
+        public MultiPDFDocuments add(String template, Options options, Map<String, Object> args) {
+            documents.add(new PDFDocument(template, options, args));
+            return this;
+        }
     }
 
     /**
      * Render the corresponding template
-     *
-     * @param args The template data
+     * 
+     * @param args
+     *            The template data
      */
     public static void renderPDF(Object... args) {
-    	// stuuuuuupid typing
-    	OutputStream os = null;
-    	writePDF(os, args);
+        // stuuuuuupid typing
+        OutputStream os = null;
+        writePDF(os, args);
     }
 
     /**
      * Render the corresponding template into a file
-     * @param file the file to render to, or null to render to the current Response object
-     * @param args the template data
+     * 
+     * @param file
+     *            the file to render to, or null to render to the current
+     *            Response object
+     * @param args
+     *            the template data
      */
     public static void writePDF(File file, Object... args) {
-    	try {
-    		OutputStream os = new FileOutputStream(file);
-    		writePDF(os, args);
-    		os.flush();
-			os.close();
-		} catch (IOException e) {
-			throw new UnexpectedException(e);
-		}
+        try {
+            OutputStream os = new FileOutputStream(file);
+            writePDF(os, args);
+            os.flush();
+            os.close();
+        } catch (IOException e) {
+            throw new UnexpectedException(e);
+        }
     }
 
     /**
      * Render the corresponding template into a file
-     * @param out the stream to render to, or null to render to the current Response object
-     * @param args the template data
+     * 
+     * @param out
+     *            the stream to render to, or null to render to the current
+     *            Response object
+     * @param args
+     *            the template data
      */
     public static void writePDF(OutputStream out, Object... args) {
         final Http.Request request = Http.Request.current();
@@ -180,44 +188,47 @@ public class PDF {
         PDFDocument singleDoc = new PDFDocument();
         MultiPDFDocuments docs = null;
 
-        if(args.length > 0){
-        	boolean firstEmpty = false;
-        	try {
-        		// play <= v1.2.3
-	    		Class<?> clazz = Class.forName(
-	    				"play.classloading.enhancers.LocalvariablesNamesEnhancer.LocalVariablesNamesTracer");
-	    		Method method = clazz.getMethod("getAllLocalVariableNames", Object.class);
-	    		firstEmpty = ( (List<String>) method.invoke(null, args[0])).isEmpty();
-        	} catch ( ClassNotFoundException e ) {
-        		// play <= v1.2.3
-        		firstEmpty = LVEnhancerRuntime.getParamNames().varargs[0].isEmpty();
-        	} catch (Exception e) {
-				throw new UnexpectedException(e);
-			}
-        	
-        	if (args[0] instanceof String && firstEmpty ) {
-        		singleDoc.template = args[0].toString();
-        	}else if(args[0] instanceof MultiPDFDocuments){
-        		docs = (MultiPDFDocuments) args[0];
-        	}
-        	if(docs == null){
-        		for(Object arg : args){
-        			if (arg instanceof Options) {
-        				singleDoc.options = (Options) arg;
-        			}
-        		}
-        	}
+        if (args.length > 0) {
+            boolean firstEmpty = false;
+
+            PdfBinderHelper binderHelper = new PdfBinderHelper();
+            switch (binderHelper.binderType) {
+            case LOCAL_VARIABLE:
+                List<String> names = (List<String>) binderHelper.getVariableNames(args[0]);
+                if (names != null) {
+                    firstEmpty = names.isEmpty();
+                }
+                break;
+            case LVENHANCER:
+                String[] varNames = (String[]) binderHelper.getVariableNames();
+                if (varNames != null && varNames.length > 0) {
+                    firstEmpty = varNames[0].isEmpty();
+                }
+                break;
+            }
+            if (args[0] instanceof String && firstEmpty) {
+                singleDoc.template = args[0].toString();
+            } else if (args[0] instanceof MultiPDFDocuments) {
+                docs = (MultiPDFDocuments) args[0];
+            }
+            if (docs == null) {
+                for (Object arg : args) {
+                    if (arg instanceof Options) {
+                        singleDoc.options = (Options) arg;
+                    }
+                }
+            }
         }
-        if (docs == null){
-        	docs = new MultiPDFDocuments();
-        	docs.add(singleDoc);
-        	if(singleDoc.template == null){
-        		singleDoc.template = request.action.replace(".", "/") + "." + (format == null ? "html" : format);
-        	}
-        	if(singleDoc.options != null && singleDoc.options.filename != null)
-        		docs.filename = singleDoc.options.filename;
-        	else
-        		docs.filename = FilenameUtils.getBaseName(singleDoc.template) + ".pdf";
+        if (docs == null) {
+            docs = new MultiPDFDocuments();
+            docs.add(singleDoc);
+            if (singleDoc.template == null) {
+                singleDoc.template = request.action.replace(".", "/") + "." + (format == null ? "html" : format);
+            }
+            if (singleDoc.options != null && singleDoc.options.filename != null)
+                docs.filename = singleDoc.options.filename;
+            else
+                docs.filename = FilenameUtils.getBaseName(singleDoc.template) + ".pdf";
         }
 
         renderTemplateAsPDF(out, docs, args);
@@ -244,44 +255,45 @@ public class PDF {
         }
         if (!templateExists) {
             if (templateName.lastIndexOf("." + format) != -1) {
-            	templateName = templateName.substring(0, templateName.lastIndexOf("." + format)) + ".html";
+                templateName = templateName.substring(0, templateName.lastIndexOf("." + format)) + ".html";
             }
         }
         return templateName;
-	}
+    }
 
-	/**
+    /**
      * Render a specific template
-     *
-     * @param templateName The template name
-     * @param args         The template data
+     * 
+     * @param templateName
+     *            The template name
+     * @param args
+     *            The template data
      */
     public static void renderTemplateAsPDF(OutputStream out, MultiPDFDocuments docs, Object... args) {
         Scope.RenderArgs templateBinding = Scope.RenderArgs.current();
-        
-        try {
-    		// play <= v1.2.3
-        	Class<?> clazz = Class.forName(
-			"play.classloading.enhancers.LocalvariablesNamesEnhancer.LocalVariablesNamesTracer");
-        	Method method = clazz.getMethod("getAllLocalVariableNames", Object.class);
-    		for (Object o : args) {
-                List<String> names = (List<String>) method.invoke(null, o);
-                for (String name : names) {
-                    templateBinding.put(name, o);
+
+        PdfBinderHelper binderHelper = new PdfBinderHelper();
+        switch (binderHelper.binderType) {
+        case LOCAL_VARIABLE:
+            for (Object o : args) {
+                List<String> names = (List<String>) binderHelper.getVariableNames(o);
+                if (names != null) {
+                    for (String name : names) {
+                        templateBinding.put(name, o);
+                    }
                 }
             }
-    	} catch ( ClassNotFoundException e ) {
-    		// play <= v1.2.3
-    		String[] names = LVEnhancerRuntime.getParamNames().varargs;
-            if(args != null && args.length > 0 && names == null)
+            break;
+        case LVENHANCER:
+            String[] names = (String[]) binderHelper.getVariableNames();
+            if (args != null && args.length > 0 && names == null)
                 throw new UnexpectedException("no varargs names while args.length > 0 !");
-            for(int i = 0; i < args.length; i++) {
+            for (int i = 0; i < args.length; i++) {
                 templateBinding.put(names[i], args[i]);
             }
-    	} catch (Exception e) {
-			throw new UnexpectedException(e);
-		}
-        
+            break;
+        }
+
         templateBinding.put("session", Scope.Session.current());
         templateBinding.put("request", Http.Request.current());
         templateBinding.put("flash", Scope.Flash.current());
@@ -292,12 +304,12 @@ public class PDF {
             throw new UnexpectedException(ex);
         }
         try {
-            if(out == null){
-            	// we're rendering to the current Response object
-            	throw new RenderPDFTemplate(docs, templateBinding.data);
-            }else{
-            	RenderPDFTemplate renderer = new RenderPDFTemplate(docs, templateBinding.data);
-            	renderer.writePDF(out, Http.Request.current(), Http.Response.current());
+            if (out == null) {
+                // we're rendering to the current Response object
+                throw new RenderPDFTemplate(docs, templateBinding.data);
+            } else {
+                RenderPDFTemplate renderer = new RenderPDFTemplate(docs, templateBinding.data);
+                renderer.writePDF(out, Http.Request.current(), Http.Response.current());
             }
         } catch (TemplateNotFoundException ex) {
             if (ex.isSourceAvailable()) {
@@ -305,13 +317,11 @@ public class PDF {
             }
             StackTraceElement element = PlayException.getInterestingStrackTraceElement(ex);
             if (element != null) {
-                throw new TemplateNotFoundException(ex.getPath(),
-                		Play.classes.getApplicationClass(element.getClassName()), element.getLineNumber());
+                throw new TemplateNotFoundException(ex.getPath(), Play.classes.getApplicationClass(element
+                        .getClassName()), element.getLineNumber());
             } else {
                 throw ex;
             }
         }
     }
-
 }
-

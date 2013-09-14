@@ -1,0 +1,20 @@
+# Application dependencies
+
+require:
+    - play
+    - play -> pdf 0.10
+
+repositories:
+    - playModules:
+        type:       chain
+        using:
+            - playLocalModules:
+                type:       local
+                descriptor: "${application.path}/../../../play--[module]/conf/dependencies.yml"
+                artifact:   "${application.path}/../../../play--[module]"
+                contains:
+                    - play -> pdf 0.10
+            - playContributedModules:
+                type:       http
+                descriptor: "http://www.playframework.org/modules/repo/[module]/[revision]/dependencies.yml"
+                artifact: "http://www.playframework.org/modules/[module]-[revision].zip"

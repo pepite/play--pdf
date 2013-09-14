@@ -1,8 +1,10 @@
 /.settings
 dist
+classes
 lib/play-pdf.jar
 samples-and-tests/pdf/tmp
 samples-and-tests/pdf/log
+samples-and-tests/pdf/modules
 build.cmd
 build.properties
 *.iws
@@ -10,6 +12,7 @@ build.properties
 *iml
 .classpath
 .project
+.settings
 build-stamp
 debian/files
 debian/play-1.1-pdf-module-*
