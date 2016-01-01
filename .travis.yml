@@ -1,0 +1,23 @@
+language: java
+jdk:
+  - oraclejdk7
+  - openjdk7
+  - openjdk6
+env:
+  - PLAY_VERSION=play-1.2.5.1 PLAY_PATH=play-1.2.5.1 PLAY_NEED_BUILD=false PLAY_DOWNLOAD=http://downloads.typesafe.com/play/1.2.5.1/play-1.2.5.1.zip
+  - PLAY_VERSION=play-1.2.6 PLAY_PATH=play-1.2.6 PLAY_NEED_BUILD=false PLAY_DOWNLOAD=http://downloads.typesafe.com/play/1.2.6/play-1.2.6.zip
+  - PLAY_VERSION=master PLAY_PATH=play1-master PLAY_NEED_BUILD=true PLAY_DOWNLOAD=https://github.com/playframework/play1/archive/master.zip
+  - PLAY_VERSION=1.3.x PLAY_PATH=play1-1.3.x PLAY_NEED_BUILD=true PLAY_DOWNLOAD=https://github.com/playframework/play1/archive/1.3.x.zip 
+before_script:
+  - wget ${PLAY_DOWNLOAD}
+  - unzip -q ${PLAY_VERSION}.zip
+  - if [[ "${PLAY_NEED_BUILD}" == "true" ]]; then ant -buildfile "./${PLAY_PATH}/framework/build.xml"; fi
+  
+script: 
+  - ant test -Dplay.path=${PLAY_PATH}
+after_failure: 
+    cat ./samples-and-tests/just-test-cases/test-result/*.failed.html
+notifications:
+  email:
+    on_success: change
+    on_failure: always
