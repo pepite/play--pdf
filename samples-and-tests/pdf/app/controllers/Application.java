@@ -50,7 +50,8 @@ public class Application extends Controller {
    * @throws MalformedURLException in case of error
    */
   public static void image(String id) throws MalformedURLException, IOException {
-    File file = new File("/" + Play.frameworkPath + "/documentation/images/" + id + ".png");
+    String safeId = new File(id).getName();
+    File file = new File("/" + Play.frameworkPath + "/documentation/images/" + safeId + ".png");
     
     if (file.exists()) {
       Logger.debug("Serving image at '%s'", file.getAbsolutePath());
